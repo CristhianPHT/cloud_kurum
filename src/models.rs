@@ -3,7 +3,7 @@ use serde::Serialize;
 use diesel::Queryable;
 // use diesel::prelude::*; // eliminar ???
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Debug)]
 pub struct Usuario {
     pub id: i32,
     pub nombre: String,

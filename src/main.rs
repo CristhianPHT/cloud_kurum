@@ -1,5 +1,5 @@
 
-// use actix_cors::Cors;  // Importa Cors
+use actix_cors::Cors;  // Importa Cors
 // use serde::Serialize;
 
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
@@ -56,6 +56,13 @@ async fn main() -> std::io::Result<()> {
             .service(hello)
             .service(test_connection)   // usando macros #[get("/name_ruta")]
             // .route("/test_connection", web::get().to(test_connection)) // sin usar macros get
+            .wrap(
+                Cors::default() // Configuración de CORS
+                    .allowed_origin("http://localhost:5173") // Cambia a la URL de tu frontend
+                    .allowed_methods(vec!["GET", "POST"]) // Métodos permitidos
+                    .allowed_headers(vec!["Content-Type"]) // Cabeceras permitidas
+                    .max_age(3600), // Duración en segundos
+            )
     })
     .bind("127.0.0.1:5330")?
     .run()
