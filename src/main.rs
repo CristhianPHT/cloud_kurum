@@ -13,6 +13,9 @@ mod schema;
 mod saludo;
 use saludo::config as saludo_config; // Importamos la configuración del módulo saludo
 
+mod nuevo_usuario;
+use nuevo_usuario::insertar_usuario as insert_b;
+
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 #[get("/hello/{id}")]
@@ -29,7 +32,7 @@ async fn hello(path: web::Path<u32>) -> impl Responder {
 
 #[get("/test_connection")]
 async fn test_connection(pool: web::Data<DbPool>) -> Result<HttpResponse, actix_web::Error> {
-    let conn = pool.get().map_err(|_| {
+    let _conn = pool.get().map_err(|_| {
         HttpResponse::InternalServerError().body("Error al obtener la conexión")
     });
     
@@ -55,7 +58,9 @@ async fn main() -> std::io::Result<()> {
             // .route("/saludo/{id}/", web::get().to(saludo)) // Ruta dinámica con ID
             .service(hello)
             .service(test_connection)   // usando macros #[get("/name_ruta")]
+            // .service(new_user)
             // .route("/test_connection", web::get().to(test_connection)) // sin usar macros get
+            .service(insert_b)
             .wrap(
                 Cors::default() // Configuración de CORS
                     .allowed_origin("http://localhost:5173") // Cambia a la URL de tu frontend
