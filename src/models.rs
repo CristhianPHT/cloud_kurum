@@ -18,3 +18,9 @@ pub struct NuevoUsuario {
     pub nombre: String,
     pub apellido: String,
 }
+
+#[derive(Deserialize)]
+pub struct UsuarioUpdate {
+    pub nombre: Option<String>,
+    pub apellido: Option<String>,
+}

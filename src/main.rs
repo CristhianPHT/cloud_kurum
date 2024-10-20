@@ -15,6 +15,8 @@ use saludo::config as saludo_config; // Importamos la configuración del módulo
 
 mod nuevo_usuario;
 use nuevo_usuario::insertar_usuario as insert_b;
+mod modific_user;
+use modific_user::modificar_usuario as md_user;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -61,10 +63,11 @@ async fn main() -> std::io::Result<()> {
             // .service(new_user)
             // .route("/test_connection", web::get().to(test_connection)) // sin usar macros get
             .service(insert_b)
+            .service(md_user)
             .wrap(
                 Cors::default() // Configuración de CORS
                     .allowed_origin("http://localhost:5173") // Cambia a la URL de tu frontend
-                    .allowed_methods(vec!["GET", "POST"]) // Métodos permitidos
+                    .allowed_methods(vec!["GET", "POST", "PUT"]) // Métodos permitidos
                     .allowed_headers(vec!["Content-Type"]) // Cabeceras permitidas
                     .max_age(3600), // Duración en segundos
             )
