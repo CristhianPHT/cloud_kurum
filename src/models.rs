@@ -12,8 +12,8 @@ pub struct Usuario {
 }
 
 #[derive(Insertable, Deserialize, Serialize)]  // Agregamos Deserialize para recibir objetos JSON
-// #[diesel(table_name = "usuariosss")]
-#[table_name = "usuariosss"]
+#[diesel(table_name = usuariosss)]
+// #[table_name = "usuariosss"]
 pub struct NuevoUsuario {
     pub nombre: String,
     pub apellido: String,
