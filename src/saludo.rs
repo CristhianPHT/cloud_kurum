@@ -51,18 +51,3 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route(web::get().to(saludo)),  // Solo ejecuta la función
     );
 }
-
-// let result = web::block(move || usuariosss.load::<Usuario>(&conn));
-// // let result = web::block(move || usuariosss.filter(id.eq(user_id)).first::<Usuario>(&conn)).await;
-
-// -----------------------  Establecer una conección con la base de datos:
-    // let conn = match pool.get() {     // conectar_data_base as conn
-    //     Ok(conn) => {
-    //         println!("Conexión a la base de datos establecida correctamente.");
-    //         HttpResponse::Ok().body(format!("Conexion exitosa, ID: {}", user_id))
-    //     },
-    //     Err(_) => {
-    //         println!("Error al obtener la conexión a la base de datos.");
-    //         HttpResponse::InternalServerError().body("Error al conectar a la base de datos.")
-    //     }
-    // };

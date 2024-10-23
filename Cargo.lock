@@ -812,7 +812,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nubeKurum"
+name = "nube_kurum"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
