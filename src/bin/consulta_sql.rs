@@ -1,7 +1,7 @@
 use nube_kurum::establish_connection;
-use nube_kurum::models::Usuario; 
+use nube_kurum::models::{Usuario, UsuarioUpdate}; 
 mod use_sql;
-use use_sql::{select_all_users, select_id};
+use use_sql::{select_all_users, select_id, update_user_id};
 
 
 pub fn main() {
@@ -15,6 +15,14 @@ pub fn main() {
   }
   let user: Usuario = select_id(&mut connection, 10);
   println!("{:?}",user);
-  println!("{:?}", select_id(&mut connection, 5));
+  let actualizar :UsuarioUpdate = UsuarioUpdate {
+    // nombre: None,
+    nombre: Some(String::from("Ban")),
+    // apellido: Some(String::from("Yo Wun")),
+    apellido: None,
+};
+  // println!("{:?}", update_user_id(&mut connection, 8, actualizar));
+  update_user_id(&mut connection, 8, actualizar);
+  println!("{:?}", select_id(&mut connection, 8));
 }
 
