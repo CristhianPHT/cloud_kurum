@@ -1,6 +1,5 @@
 use nube_kurum::establish_connection;
-pub mod use_sql;
-use use_sql::update_user_id;
+use nube_kurum::update_user_id;
 
 use nube_kurum::models::UsuarioUpdate;
 // mod consulta_sql;
