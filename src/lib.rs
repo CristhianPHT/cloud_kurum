@@ -5,6 +5,7 @@ use std::env;
 // modulos públicos para usarlo con name de package. //(nube_kurum)
 pub mod models;
 pub mod schema;
+
 // Establece la conexión a la base de datos
 pub fn establish_connection() -> PgConnection {
   dotenv().ok();

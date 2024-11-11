@@ -24,36 +24,38 @@ pub fn select_all_users(conn: &mut PgConnection, page: i64) -> Vec<Usuario> {
 }
 use diesel::dsl::update;
 
-  // pub fn update_user_id(
-  //     conn: &mut PgConnection,
-  //     usuario_id: i32,
-  //     usuario: UsuarioUpdate,
-  // ) -> Result<usize, diesel::result::Error> {
-  //     // Ejecutar el update
-  //     let result = update(usuariosss.filter(id.eq(usuario_id) ) )
-  //         .set((
-  //             nombre.eq(usuario.nombre.clone().unwrap_or_default()),
-  //             apellido.eq(usuario.apellido.clone().unwrap_or_default()),
-  //         ))
-  //         .execute(conn); // Ejecutar con la conexión mutable
-
-  //     result // Devolver el resultado (número de filas afectadas o error)
-  // }
+pub fn update_user_id(
+  conn: &mut PgConnection,
+  usuario_id: i32,
+  usuario: UsuarioUpdate,
+  ) -> Result<usize, diesel::result::Error> {
+  // Ejecutar el update
+  let result = update(usuariosss.filter(id.eq(usuario_id) ) )
+    .set((
+      nombre.eq(usuario.nombre.clone().unwrap_or_default()),
+      apellido.eq(usuario.apellido.clone().unwrap_or_default()),
+    ))
+    .execute(conn); // Ejecutar con la conexión mutable
+  result // Devolver el resultado (número de filas afectadas o error)
+}
+pub fn main(){
+  println!("Hola mundo, conectando a la base de datos...");
+}
 // Errores, no sirve
-pub fn actualizar_usuario(conn: &mut PgConnection, usuario_id: i32, usuario: Usuario) -> QueryResult<usize> {
-  let mut query = update(usuariosss.filter(id.eq(usuario_id)));
-  if let Some(nuevo_nombre) = usuario.nombre {
-    query = query.set(nombre.eq(nuevo_nombre));
-  }
-  if let Some(b) = usuario.nombre.map(|a| nombre.eq(a)) {
-    query = query.set(b);
-}
 
-  if let Some(q) = usuario.apellido.map(|a| apellido.eq(a)) {
-    query = query.set(q);
-}
-
+// pub fn actualizar_usuario(conn: &mut PgConnection, usuario_id: i32, usuario: Usuario) -> QueryResult<usize> {
+//   let mut query = update(usuariosss.filter(id.eq(usuario_id)))
+//   .set
   
-  query.execute(conn)
-}
+//   // Actualizar nombre si existe
+//   if let Some(nuevo_nombre) = usuario.nombre {
+//       query = query.set(nombre.eq(nuevo_nombre));
+//   }
   
+//   // Actualizar apellido si existe
+//   if let Some(nuevo_apellido) = usuario.apellido {
+//       query = query.set(apellido.eq(nuevo_apellido));
+//   }
+  
+//   query.execute(conn)
+// }
