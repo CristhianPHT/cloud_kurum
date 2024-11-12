@@ -9,7 +9,9 @@ fn main(){
   let mostrar = &mut establish_connection();
   println!("Hola mundo, conectando a la base de datos...");
   let _ = update_user_id(mostrar, 1, UsuarioUpdate {
-    nombre: Some(String::from("Juan")),
-    apellido: Some(String::from("Pérez")),
+    nombre: Some(String::from("Juan2")),
+    // nombre: None,
+    // apellido: Some(String::from("Pere2")),
+    apellido: None,
   });
 }
