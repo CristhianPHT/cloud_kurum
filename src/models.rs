@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-// use serde::Serialize;
 use diesel::{Queryable,Insertable};
-// use diesel::prelude::*; // eliminar ???
 use crate::schema::usuariosss;
 
 #[derive(Queryable, Serialize, Debug)]
@@ -11,7 +9,7 @@ pub struct Usuario {
     pub apellido: String,
 }
 
-#[derive(Insertable, Deserialize, Serialize)]  // Agregamos Deserialize para recibir objetos JSON
+#[derive(Insertable, Deserialize, Serialize, Clone)]  // Agregamos Deserialize para recibir objetos JSON
 #[diesel(table_name = usuariosss)]
 pub struct NuevoUsuario {
     pub nombre: String,

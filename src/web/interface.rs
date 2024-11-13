@@ -1,5 +1,5 @@
 use crate::establish_connection;
-use actix_web::{get,web, HttpResponse, Responder};
+use actix_web::{get,post, put,web, HttpResponse, Responder};
 
 
 #[get("/check")]
@@ -11,8 +11,8 @@ pub async fn health_check() -> impl Responder {
     }
 }
 
-use crate::models::Usuario; // , UsuarioUpdate
-use crate::{select_all_users, select_id}; // , update_user_id
+use crate::models::{NuevoUsuario, Usuario, UsuarioUpdate}; // , UsuarioUpdate
+use crate::{select_all_users, select_id, insert_user, update_user_id}; // , update_user_id
 use serde_json::json;
 
 #[get("/users")]
@@ -54,11 +54,29 @@ pub async fn show_user(id: web::Path<i32>) -> impl Responder {
   }))
 }
 
-// #[post("/users")]
-// pub async fn create_user(user: web::Json<Usuario>) -> impl Responder {
-//   let mut conn = establish_connection();
-//   insert_user(&mut conn, user.into_inner());
-//   HttpResponse::Created().json(json!({
-//     "usuario": user
-//   }))
-// }
+#[post("/users")]
+pub async fn create_user(user: web::Json<NuevoUsuario>) -> impl Responder {
+  let mut conn = establish_connection();
+  let nuevo_usuario = user.into_inner();
+  let _identidad = insert_user(&mut conn, nuevo_usuario.clone());
+  HttpResponse::Ok().json(json!({
+      "usuario": nuevo_usuario
+  }))
+}
+
+#[put("/users/{id}")]
+pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> impl Responder {
+  let user_id = id.into_inner();
+  let mut conn = establish_connection();
+  let updated_user = update_user_id(&mut conn, user_id, user.into_inner());
+  println!("{:?}", updated_user);
+  match updated_user {
+    Ok(rows_updated) => HttpResponse::Ok().json(json!({
+        // "usuario": user.into_inner().nombre.clone(), // Error no puede mostrar el nombre
+        "filas_actualizadas": rows_updated
+    })),
+    Err(_) => HttpResponse::InternalServerError().json(json!({
+        "error": "Error al actualizar el usuario"
+    }))
+}
+}

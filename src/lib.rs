@@ -20,7 +20,7 @@ pub fn establish_connection() -> PgConnection {  // para conectar a la base de d
     .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
-use models::{Usuario, UsuarioUpdate}; 
+use models::{NuevoUsuario, Usuario, UsuarioUpdate}; 
 use schema::usuariosss::dsl::{usuariosss, id, nombre, apellido}; // para id y usuariosss
 // use nube_kurum::establish_connection;  // ya no llamarlo si se usa en otro lado
 
@@ -42,7 +42,7 @@ pub fn select_all_users(conn: &mut PgConnection, page: i64) -> Vec<Usuario> {  /
     .expect("No cargó Usuarios: Error");
   select_users
 }
-use diesel::dsl::update;
+use diesel::dsl::{update, insert_into};
 
 
 // pub fn update_user_id(conn: &mut PgConnection, usuario_id: i32, usuario: UsuarioUpdate) -> QueryResult<usize> {
@@ -87,3 +87,14 @@ pub fn update_user_id(conn: &mut PgConnection, usuario_id: i32, usuario: Usuario
     }
   }
 }
+
+pub fn insert_user(connec: &mut PgConnection, usuario: NuevoUsuario) -> QueryResult<i32> {
+  let inserted_id = insert_into(usuariosss)
+      .values(usuario)
+      .returning(id)
+      .get_result(connec);
+  // println!("{:?}", inserted_id);
+
+  inserted_id
+}
+
