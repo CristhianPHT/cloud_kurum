@@ -4,7 +4,7 @@
 ## modific_user = modificar el usuario por el id.
 ## test termnal inputs and outputs:
 
-### cargo run --bin show_post
+### cargo run --bin backend
 # Proyecto Actix Web con Diesel ORM
 
 Este proyecto es una API backend construida con **Actix Web** y **Diesel ORM** para interactuar con una base de datos PostgreSQL. El objetivo es crear un sistema modularizado en Rust, donde la base de datos y la lógica de la API se gestionan de forma estructurada.
@@ -15,11 +15,11 @@ Este es un resumen de los archivos y directorios más importantes del proyecto:
 
 ### Archivos Principales
 
-- **`main.rs`**: Es el archivo de entrada de la aplicación. Aquí se configura la conexión a la base de datos y se inician las rutas y el servidor web con Actix.
-- **`lib.rs`**: Contiene la lógica central para interactuar con la base de datos utilizando **Diesel ORM**. Aquí se gestionan las consultas SQL, inserciones y modificaciones.
-- **`use_sql.rs`**: Este archivo en el directorio `bin/` se utiliza para hacer las llamadas necesarias a las funciones definidas en `lib.rs` con personalización y sin lógica redundante.
-- **`models.rs`**: Define los modelos de datos para las entidades que manejas, como los usuarios. Utiliza la funcionalidad de Diesel para mapear las tablas de la base de datos.
-- **`schema.rs`**: Contiene las definiciones de las tablas en la base de datos que **Diesel** utiliza para generar las consultas SQL.
+- **`bin/backend.rs`**: Es el archivo de entrada de la aplicación. Aquí se configura la conexión a la base de datos y se inician las rutas y el servidor web con Actix.
+- **`lib.rs`**: Contiene la lógica central para interactuar con la base de datos utilizando **Diesel ORM**. Aquí se gestionan las consultas SQL, (insert_id, update_id, select_all, select_id).
+- **`models.rs`**: Define los modelos de datos para las entidades que manejas. Utiliza la funcionalidad de Diesel para mapear las tablas de la base de datos (Usuario, NuevoUsuario, UsuarioUpdate).
+- **`schema.rs`**: Contiene las definiciones de las tablas en la base de datos que **Diesel** utiliza para generar las consultas SQL (usuariosss).
+- **`web/interface.rs`**: Este archivo en el directorio `web/` se utiliza para hacer las llamadas necesarias a las funciones definidas en `lib.rs` dónde será la salida en formato json como API para get, post y put (show_user, create_user, update_user).
 
 ### Archivos Raíz
 
@@ -33,7 +33,10 @@ Este archivo contiene las sentencias SQL que se utilizan para interactuar con la
 
 #### Ejemplo de uso:
 ```rust
-pub fn obtener_usuario_por_id(id: i32) -> QueryResult<Usuario> {
-    use crate::schema::usuarios::dsl::*;
-    usuarios.filter(id.eq(id)).first::<Usuario>(&connection)
+pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Usuario {  // para mostrar usuario por id = input(conn, id)
+  let usuario = usuariosss
+    .find(usuario_id)
+    .first::<Usuario>(conn)
+    .expect("Error al buscar el usuario");
+  usuario
 }
