@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.9"
-actix-cors = "0.6"   # Agrega esta línea
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-diesel = { version = "2.2", features = ["r2d2", "postgres"] }
-dotenv = "0.15"
-r2d2 = "0.8"
-tokio = { version = "1", features = ["full"] }
+actix-web = "4.9"  # Para manejar las rutas y endpoints
+actix-cors = "0.6"   # Para manejar las solicitudes de origen cruzado
+serde = { version = "1.0", features = ["derive"] }  # Para serializar y deserializar JSON
+serde_json = "1.0"  # Para serializar y deserializar JSON
+diesel = { version = "2.2", features = ["r2d2", "postgres", "chrono"] }  # Para interactuar con la base de datos PostgreSQL
+dotenv = "0.15"  # Para manejar variables de entorno
+r2d2 = "0.8"  # Para manejar las conexiones a la base de datos
+tokio = { version = "1", features = ["full"] }  # Para manejar hilos y tareas asíncronas
+chrono = { version = "0.4", features = ["serde"] }
+bcrypt = "0.1"  # Para hashear y verificar contraseñas
+jsonwebtoken = "9.3"

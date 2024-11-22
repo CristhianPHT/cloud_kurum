@@ -80,3 +80,87 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
     }))
 }
 }
+// --------------------------------------------------------------------------------------------
+use crate::models::{NuevoAccount, Account, LoginAccount};
+use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token, select_id_token};
+use actix_web::HttpRequest;
+#[get("/login/{id}")]
+pub async fn show_login(id: web::Path<i32>, req: HttpRequest) -> impl Responder {
+    let user_id = id.into_inner();
+
+    // Leer el token del encabezado Authorization
+    let token_input = match req.headers().get("Authorization") {
+        Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
+        None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
+    };
+  let mut conn = establish_connection();
+  let user: Account = select_id_usuario(&mut conn, user_id);
+  let _id_token_output = select_id_token(&mut conn, token_input);
+  HttpResponse::Ok().json(json!({
+    // "token": token_output, // Clonamos token_input para evitar el error de movimiento
+    "usuario": user
+  }))
+}
+
+#[post("/login")]
+pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
+  let mut conn = establish_connection();
+  let usuario_login = user.into_inner();
+  let identidad = login_usuario_hashed(&mut conn, usuario_login.username.as_str(), usuario_login.password_hash.as_str());
+  match identidad {
+    Ok(identidad)
+      if identidad != 0 => {
+        let expira = calculate_expiration();
+        let token = generate_jwt(identidad, expira);
+        let _data_base = insert_auth_token(&mut conn, identidad, token.clone(), expira);
+        HttpResponse::Ok().json(json!({
+          "token": token.clone()
+        }))
+      },
+    Ok(_) => HttpResponse::Unauthorized().json(json!({
+      "error": "Usuario o contraseña incorrectos"
+    })),
+    Err(_) => HttpResponse::InternalServerError().json(json!({
+        "error": "Error al autenticar el usuario"
+    })),
+  }
+}
+
+#[post("/login_all")]
+pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder {
+  let mut conn = establish_connection();
+  let usuario_all = user.into_inner();
+  let _identidad = insert_usuario(&mut conn, usuario_all.clone());
+  HttpResponse::Ok().json(json!({
+      "usuario": usuario_all
+  }))
+}
+#[put("/login/{id}")]
+pub async fn update_usuario_login(id: web::Path<i32>, user: web::Json<NuevoAccount>) -> impl Responder {
+  let user_id = id.into_inner();
+  let mut conn = establish_connection();
+  let updated_user = update_login(&mut conn, user_id, user.into_inner());
+  println!("{:?}", updated_user);
+  match updated_user {
+    Ok(rows_updated) => HttpResponse::Ok().json(json!({
+        "filas_actualizadas": rows_updated
+    })),
+    Err(_) => HttpResponse::InternalServerError().json(json!({
+        "error": "Error al actualizar el usuario"
+    }))
+  }
+}
+// --------------------------------------------------------------------------------------------
+use crate::models::NuevoAuthToken;
+#[post("/auth")]
+pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
+  let mut conn = establish_connection();
+
+  let auth_token = user.into_inner();
+  let expira = calculate_expiration();
+  let token = generate_jwt(auth_token.user_id, expira);
+  let _data_base = insert_auth_token(&mut conn, auth_token.user_id, token.clone(), expira);
+  HttpResponse::Ok().json(json!({
+      "auth_token": token.clone()
+  }))
+}
