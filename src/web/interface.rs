@@ -15,7 +15,7 @@ use crate::models::{NuevoUsuario, Usuario, UsuarioUpdate}; // , UsuarioUpdate
 use crate::{select_all_users, select_id, insert_user, update_user_id}; // , update_user_id
 use serde_json::json;
 
-#[get("/users")]
+#[get("/test")]
 pub async fn show_users() -> impl Responder {
   let mut conn = establish_connection();
   let lista_usuarios: Vec<Usuario> = select_all_users(&mut conn, 0);
@@ -44,7 +44,7 @@ pub async fn show_users() -> impl Responder {
   respuesta
 }
 
-#[get("/users/{id}")]
+#[get("/test/{id}")]
 pub async fn show_user(id: web::Path<i32>) -> impl Responder {
   let user_id = id.into_inner();
   let mut conn = establish_connection();
@@ -54,7 +54,7 @@ pub async fn show_user(id: web::Path<i32>) -> impl Responder {
   }))
 }
 
-#[post("/users")]
+#[post("/test")]
 pub async fn create_user(user: web::Json<NuevoUsuario>) -> impl Responder {
   let mut conn = establish_connection();
   let nuevo_usuario = user.into_inner();
@@ -64,7 +64,7 @@ pub async fn create_user(user: web::Json<NuevoUsuario>) -> impl Responder {
   }))
 }
 
-#[put("/users/{id}")]
+#[put("/test/{id}")]
 pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> impl Responder {
   let user_id = id.into_inner();
   let mut conn = establish_connection();
@@ -86,13 +86,12 @@ use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashe
 use actix_web::HttpRequest;
 #[get("/login/{id}")]
 pub async fn show_login(id: web::Path<i32>, req: HttpRequest) -> impl Responder {
-    let user_id = id.into_inner();
-
+  let user_id = id.into_inner();
     // Leer el token del encabezado Authorization
-    let token_input = match req.headers().get("Authorization") {
-        Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
-        None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
-    };
+  let token_input = match req.headers().get("Authorization") {
+    Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
+    None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
+  };
   let mut conn = establish_connection();
   let user: Account = select_id_usuario(&mut conn, user_id);
   let _id_token_output = select_id_token(&mut conn, token_input);
@@ -162,5 +161,27 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
   let _data_base = insert_auth_token(&mut conn, auth_token.user_id, token.clone(), expira);
   HttpResponse::Ok().json(json!({
       "auth_token": token.clone()
+  }))
+}
+
+// ---------------------------------------------------------------------------------------------
+// Generica
+#[get("/generica/{id}")]
+pub async fn select_generica(id: web::Path<i32>) -> impl Responder {
+  let mut conn = establish_connection();
+  let user_id = id.into_inner();
+  let user: Usuario = select_id(&mut conn, user_id);
+  HttpResponse::Ok().json(json!({
+    "usuario": user
+  }))
+}
+
+#[post("/generica")]
+pub async fn insert_generica(user: web::Json<NuevoUsuario>) -> impl Responder {
+  let mut conn = establish_connection();
+  let nuevo_usuario = user.into_inner();
+  let _identidad = insert_user(&mut conn, nuevo_usuario.clone());
+  HttpResponse::Ok().json(json!({
+      "usuario": nuevo_usuario
   }))
 }

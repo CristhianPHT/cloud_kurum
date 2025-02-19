@@ -40,3 +40,16 @@ pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Usuario {  // para
     .expect("Error al buscar el usuario");
   usuario
 }
+```
+
+## Creación de tablas SQL en terminal:
+diesel migrations generate name_file -----> from reference `https://diesel.rs/guides/getting-started`
+### Correr el programa y migrar a postgres psql
+'''diesel migration run'''
+### Eliminar tablas creadas antes de postgres psql
+'''diesel migraition redo'''
+generando un archivo schema.rs por defecto que utilizarás
+
+
+## Tablas Principales:
+Usuario, Libro, 
