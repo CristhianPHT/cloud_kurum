@@ -2,7 +2,7 @@ use crate::establish_connection;
 use actix_web::{get,post, put,web, HttpResponse, Responder};
 
 
-#[get("/check")]
+#[get("/check")]    // Comprobar la conexión con la base de datos con diesel/rust
 pub async fn health_check() -> impl Responder {
     // Intentar establecer la conexión con la base de datos
     match std::panic::catch_unwind(|| establish_connection()) {
@@ -11,11 +11,11 @@ pub async fn health_check() -> impl Responder {
     }
 }
 
-use crate::models::{NuevoUsuario, Usuario, UsuarioUpdate}; // , UsuarioUpdate
+use crate::models::{Libro, NuevoLibro, NuevoUsuario, Usuario, UsuarioUpdate}; // , UsuarioUpdate
 use crate::{select_all_users, select_id, insert_user, update_user_id}; // , update_user_id
 use serde_json::json;
 
-#[get("/test")]
+#[get("/test")]   // Se busca a todos los usuarios  en una lista de usuarios... (select_all_users)
 pub async fn show_users() -> impl Responder {
   let mut conn = establish_connection();
   let lista_usuarios: Vec<Usuario> = select_all_users(&mut conn, 0);
@@ -44,17 +44,22 @@ pub async fn show_users() -> impl Responder {
   respuesta
 }
 
-#[get("/test/{id}")]
+#[get("/test/{id}")]    // Se busca un usuario a través del id del usuario en el link (select_id)
 pub async fn show_user(id: web::Path<i32>) -> impl Responder {
-  let user_id = id.into_inner();
-  let mut conn = establish_connection();
-  let user: Usuario = select_id(&mut conn, user_id);
-  HttpResponse::Ok().json(json!({
-    "usuario": user
-  }))
+    let user_id = id.into_inner();
+    let mut conn = establish_connection();
+    let user_result: Result<Usuario, diesel::result::Error> = select_id(&mut conn, user_id);
+    match user_result {
+        Ok(user) => HttpResponse::Ok().json(json!({
+            "usuario": user
+        })),
+        Err(_) => HttpResponse::NotFound().json(json!({
+            "error": "Usuario no encontrado"
+        })),
+    }
 }
 
-#[post("/test")]
+#[post("/test")]    // Se ingresa un nuevo usuario (class=NuevoUsuario, insert_user)
 pub async fn create_user(user: web::Json<NuevoUsuario>) -> impl Responder {
   let mut conn = establish_connection();
   let nuevo_usuario = user.into_inner();
@@ -64,7 +69,7 @@ pub async fn create_user(user: web::Json<NuevoUsuario>) -> impl Responder {
   }))
 }
 
-#[put("/test/{id}")]
+#[put("/test/{id}")]    // Se actualiza un usuario existente con update user
 pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> impl Responder {
   let user_id = id.into_inner();
   let mut conn = establish_connection();
@@ -84,23 +89,30 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
 use crate::models::{NuevoAccount, Account, LoginAccount};
 use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token, select_id_token};
 use actix_web::HttpRequest;
-#[get("/login/{id}")]
-pub async fn show_login(id: web::Path<i32>, req: HttpRequest) -> impl Responder {
-  let user_id = id.into_inner();
+// --------------------------------------------------------------------------------------------
+//  select_id_token   Se encarga de las acciones con la autenticación obtenida
+#[post("/usuario")]
+pub async fn show_login(req: HttpRequest) -> impl Responder {
     // Leer el token del encabezado Authorization
   let token_input = match req.headers().get("Authorization") {
-    Some(header_value) => header_value.to_str().unwrap_or("").replace("Bearer ", ""),
+    Some(header_value) => {
+      let token_str = header_value.to_str().unwrap_or("").trim();
+      token_str.strip_prefix("Bearer ").unwrap_or(token_str).to_string()
+    },
     None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
   };
   let mut conn = establish_connection();
-  let user: Account = select_id_usuario(&mut conn, user_id);
-  let _id_token_output = select_id_token(&mut conn, token_input);
+  let id_usuario_find = match select_id_token(&mut conn, token_input) {
+    Ok(id) => id,
+    Err(_) => return HttpResponse::Unauthorized().body("Token inválido o expirado"),
+};
+  let usuario_encontrado = select_id_usuario(&mut conn, id_usuario_find);
   HttpResponse::Ok().json(json!({
-    // "token": token_output, // Clonamos token_input para evitar el error de movimiento
-    "usuario": user
+    "usuario": usuario_encontrado
   }))
 }
-
+// --------------------------------------------------------------------------------------------
+// insert_auth_token con username y password para obtener el authtoken
 #[post("/login")]
 pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
   let mut conn = establish_connection();
@@ -124,8 +136,9 @@ pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
     })),
   }
 }
-
-#[post("/login_all")]
+// --------------------------------------------------------------------------------------------
+// ingresar usuario sin token (insert usuario), retorna los mismos datos (no debería?)
+#[post("/register")]
 pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder {
   let mut conn = establish_connection();
   let usuario_all = user.into_inner();
@@ -134,6 +147,8 @@ pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder {
       "usuario": usuario_all
   }))
 }
+// --------------------------------------------------------------------------------------------
+// Actualizar los datos de usuario (update login)
 #[put("/login/{id}")]
 pub async fn update_usuario_login(id: web::Path<i32>, user: web::Json<NuevoAccount>) -> impl Responder {
   let user_id = id.into_inner();
@@ -150,6 +165,7 @@ pub async fn update_usuario_login(id: web::Path<i32>, user: web::Json<NuevoAccou
   }
 }
 // --------------------------------------------------------------------------------------------
+// insert_auth_token Se crea un nuevo token... solo eso...
 use crate::models::NuevoAuthToken;
 #[post("/auth")]
 pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
@@ -166,22 +182,55 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
 
 // ---------------------------------------------------------------------------------------------
 // Generica
-#[get("/generica/{id}")]
-pub async fn select_generica(id: web::Path<i32>) -> impl Responder {
-  let mut conn = establish_connection();
-  let user_id = id.into_inner();
-  let user: Usuario = select_id(&mut conn, user_id);
-  HttpResponse::Ok().json(json!({
-    "usuario": user
-  }))
-}
+// use crate::{select_by_id, generic_insert};
+// use crate::select_by_id;
+// // use crate::schema::{libro, usuario, usuariosss};
+// use crate::schema::usuariosss;
+// // use crate::usuariosss;
+// #[get("/generica/{id}")]
+// pub async fn select_generica(id: web::Path<i32>) -> impl Responder {
+//     let mut conn = establish_connection();
+//     let user_id = id.into_inner();
+    
+//     match select_by_id(usuariosss::table, &mut conn, user_id) {
+//       Ok(user) => HttpResponse::Ok().json(user),
+//       Err(diesel::result::Error::NotFound) => {
+//           HttpResponse::NotFound().json(json!({"error": "Usuario no encontrado"}))
+//       },
+//       Err(_) => HttpResponse::InternalServerError().finish(),
+//   }
+// }
 
-#[post("/generica")]
-pub async fn insert_generica(user: web::Json<NuevoUsuario>) -> impl Responder {
-  let mut conn = establish_connection();
-  let nuevo_usuario = user.into_inner();
-  let _identidad = insert_user(&mut conn, nuevo_usuario.clone());
-  HttpResponse::Ok().json(json!({
-      "usuario": nuevo_usuario
-  }))
-}
+// #[post("/generica")]
+// pub async fn insert_generica(user: web::Json<NuevoUsuario>) -> impl Responder {
+//   let mut conn = establish_connection();
+//   let nuevo_usuario = user.into_inner();
+//   let _identidad = generic_insert(&mut conn, nuevo_usuario.clone());
+//   HttpResponse::Ok().json(json!({
+//       "usuario": nuevo_usuario
+//   }))
+// }
+
+// ---------------------------------------------------------------------------------------------
+// -----------------------------------------libros----------------------------------------------
+// use crate::models::{NuevoLibro, Libro};
+
+// #[get("/generica/{id}")]
+// pub async fn get_libro_data(id: web::Path<i32>) -> impl Responder {
+//   let mut conn = establish_connection();
+//   let user_id = id.into_inner();
+//   let libro: Libro = select_by_id(libro, &mut conn, user_id);
+//   HttpResponse::Ok().json(json!({
+//     "libros": libro
+//   }))
+// }
+
+// #[post("/generica")]
+// pub async fn insert_libro(user: web::Json<NuevoLibro>) -> impl Responder {
+//   let mut conn = establish_connection();
+//   let nuevo_usuario = user.into_inner();
+//   let _identidad = insert_user(&mut conn, nuevo_usuario.clone());
+//   HttpResponse::Ok().json(json!({
+//       "usuario": nuevo_usuario
+//   }))
+// }

@@ -12,6 +12,6 @@ diesel = { version = "2.2", features = ["r2d2", "postgres", "chrono"] }  # Para 
 dotenv = "0.15"  # Para manejar variables de entorno
 r2d2 = "0.8"  # Para manejar las conexiones a la base de datos
 tokio = { version = "1", features = ["full"] }  # Para manejar hilos y tareas asíncronas
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] } # Para la utilización correcta de fechas
 bcrypt = "0.1"  # Para hashear y verificar contraseñas
 jsonwebtoken = "9.3"

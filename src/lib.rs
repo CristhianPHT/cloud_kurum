@@ -24,11 +24,12 @@ pub fn establish_connection() -> PgConnection {  // para conectar a la base de d
 use models::{NuevoUsuario, Usuario, UsuarioUpdate}; 
 use schema::usuariosss::dsl::{usuariosss, id, nombre, apellido}; // para id y usuariosss
 // use nube_kurum::establish_connection;  // ya no llamarlo si se usa en otro lado
-pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Usuario {
-  FindDsl::
-    find(usuariosss, usuario_id)
-    .first::<Usuario>(conn)
-    .expect("Error al buscar el usuario")
+pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Result<Usuario, diesel::result::Error> {
+    use schema::usuariosss::dsl::*; // Asegúrate de importar las columnas necesarias
+
+    usuariosss
+        .filter(id.eq(usuario_id)) // Usa filter para especificar el id
+        .first::<Usuario>(conn)
 }
 
 pub fn select_all_users(conn: &mut PgConnection, page: i64) -> Vec<Usuario> {
@@ -134,6 +135,7 @@ pub fn login_usuario_hashed(conn: &mut PgConnection, user_email: &str, hashed_pa
     Err(e) => Err(e), // Propaga otros errores
   }
 }
+
 pub fn update_login(conn: &mut PgConnection, usuario_id: i32, nuevo: NuevoAccount) -> QueryResult<usize> {
   let query = update(usuario.filter(account_id.eq(usuario_id)));
   query.set(nuevo).execute(conn)
@@ -175,50 +177,43 @@ pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_inpu
   let inserted_id = insert_into(auth_tokens)
     .values(auth_token)
     .returning(token)
-    .get_result(conn);
+    .get_result(conn)
+    .map_err(|e| {
+      eprintln!("Error insertando token: {:?}", e);
+      e
+    }); // Para poder obtener un QueryResult ponemos map_err
   inserted_id
 }
 
-pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryResult<i32> {
-  let tokenizador = auth_tokens
-    .filter(token.eq(token_input))
-    .select(user_id)
-    .first::<i32>(conn);
-  tokenizador
+pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryResult<i32>{  // si el token no se encuantra (ver ese caso)
+  auth_tokens
+  .filter(token.eq(token_input))
+  .select(user_id)
+  .first::<i32>(conn)
+  .map_err(|e| {
+      eprintln!("Error buscando id con el token: {:?}", e);  // Usa eprintln! para debug
+      e  // Devuelve el error en lugar de consumirlo con `()`
+  })
 }
 
-// Select para todo... por defecto con objetos parametrizados.
-
-// pub fn select_params(conn: &mut PgConnection, id_clave: i32) -> T {  // para mostrar usuario por id = input(conn, id)
-//   let tabla_diesel = name_tabla
-//     .find(id_clave)
-//     .first::<T>(conn)
-//     // .optional() // Devuelve un Option<Usuario>
-//     .expect("Error al buscar la data");
-//   tabla_diesel
-// }
-
+// ..................................................................................................
+//  para las funciones genericas de select e insert
 use diesel::query_dsl::{LoadQuery, RunQueryDsl};
 use diesel::Table;
 
 pub fn select_by_id<T, U>(
-    table: T,
-    conn: &mut PgConnection,
-    id_clave: i32,
+  table: T,
+  conn: &mut PgConnection,
+  id_clave: i32,
 ) -> Result<U, diesel::result::Error>
 where
-    // T debe ser una tabla con FindDsl para i32
-    T: Table + FindDsl<i32>,
-    // La consulta resultante de `find()` debe admitir LIMIT 1
-    <T as FindDsl<i32>>::Output: LimitDsl + RunQueryDsl<PgConnection>,
-    // La consulta final (después de LIMIT) debe poder cargarse en U
-    <<T as FindDsl<i32>>::Output as LimitDsl>::Output: LoadQuery<'static, PgConnection, U>,
-    // U debe implementar Queryable para las columnas de la tabla T
-    U: Queryable<<T as Table>::AllColumns, Pg>,
-    // Las columnas de T deben ser compatibles con el backend PostgreSQL
-    <T as Table>::AllColumns: diesel::Expression<SqlType = diesel::sql_types::Untyped>,
+  T: Table + FindDsl<i32>,
+  <T as FindDsl<i32>>::Output: LimitDsl + RunQueryDsl<PgConnection>,
+  <<T as FindDsl<i32>>::Output as LimitDsl>::Output: LoadQuery<'static, PgConnection, U>,
+  U: Queryable<<T as Table>::AllColumns, Pg>,
+  <T as Table>::AllColumns: diesel::Expression<SqlType = diesel::sql_types::Untyped>,
 {
-    table.find(id_clave).first(conn)
+  table.find(id_clave).first(conn)
 }
 
 
@@ -240,15 +235,5 @@ where
     diesel::insert_into(table).values(data).execute(conn)
 }
 
-
-
-
-
-// pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Usuario {  // para mostrar usuario por id = input(conn, id)
-//   let variable_usuario = usuariosss
-//     .find(usuario_id)
-//     .first::<Usuario>(conn)
-//     // .optional() // Devuelve un Option<Usuario>
-//     .expect("Error al buscar el usuario");
-//   variable_usuario
-// }
+// ---------------------------------------------------------------------------------------------
+// --------------------------------------Libros--------------------------------------------------

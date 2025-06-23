@@ -39,16 +39,13 @@ pub struct LoginAccount {   // Logearse legalmente como usuario (post)
 }
 #[derive(Queryable, Serialize, Selectable, Debug)]
 #[diesel(table_name = usuario)]
-pub struct Account {    // Obtener datos (get)
-    pub id: i32,
+pub struct Account {    // Obtener datos (get) (Pagina principal del usuario para ver sus datos...)
     pub nickname: Option<String>,
     pub perfil: Option<String>,
-    pub username: String,
-    pub password_hash: String,
-    pub email: String,
+    // pub email: String,
     pub actualizacion: chrono::NaiveDateTime,
-    pub activo: bool,
-    pub creado: chrono::NaiveDateTime,
+    // pub activo: bool,
+    // pub creado: chrono::NaiveDateTime,
 }
 #[derive(Insertable, Deserialize, Serialize, Clone, AsChangeset)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = usuario)]
@@ -91,7 +88,7 @@ pub struct NuevoAuthToken {  // Struct para insertar datos en la base de datos (
     pub expira: NaiveDateTime,
     pub activo: bool,
 }
-#[derive(Queryable, Serialize, Debug)]
+#[derive(Queryable, Serialize, Debug)] // Select de los datos
 #[diesel(table_name = auth_tokens)]
 pub struct AuthToken {
     pub id: i32,
@@ -144,6 +141,21 @@ pub struct Libro {      // Esta Structura como get (json) o select * from libro 
     pub publicacion: chrono::NaiveDateTime,
     pub estado: String,
 }
+
+use chrono::NaiveDate;
+
+#[derive(Insertable, Deserialize, Serialize, Clone)]  
+#[diesel(table_name = libro)]
+pub struct NuevoLibro {
+    pub titulo: String,
+    pub perfil: Option<String>,
+    pub sinopsis: Option<String>,
+    pub tipo: Option<String>,
+    pub capitulos: Option<String>,
+    pub publicacion: NaiveDate,     // NaiveDate por que en la base de datos es type Date (solo fecha)
+    pub estado: String,
+}
+
 
 #[derive(Queryable, Serialize, Selectable, Debug)]
 #[diesel(table_name = capitulos)]

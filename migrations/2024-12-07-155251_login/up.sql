@@ -7,7 +7,7 @@ CREATE TABLE usuariosss (
 CREATE TABLE usuario (
   id SERIAL PRIMARY KEY,
   nickname VARCHAR UNIQUE,
-  perfil TEXT,
+  perfil TEXT, -- imagen/link
   username VARCHAR UNIQUE NOT NULL,
   password_hash VARCHAR NOT NULL,
   email VARCHAR UNIQUE NOT NULL,

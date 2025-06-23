@@ -53,3 +53,25 @@ generando un archivo schema.rs por defecto que utilizarás
 
 ## Tablas Principales:
 Usuario, Libro, 
+
+
+# Base de datos
+### Comprobar que está encendido localmente:
+```bash
+sudo systemctl status postgresql
+```
+
+### Encender postgresql en el sistema:
+```bash
+sudo systemctl start postgresql
+```
+# 🚀 Mi Proyecto
+
+Bienvenido a la documentación principal del proyecto. Usa las secciones siguientes como referencia rápida:
+
+## 📂 Índice
+
+- [📦 Base de datos](#base-de-datos)
+- [🦀 Servidor Rust](#servidor-rust)
+
+---
