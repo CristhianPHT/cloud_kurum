@@ -150,7 +150,7 @@ pub fn update_login(conn: &mut PgConnection, usuario_id: i32, nuevo: NuevoAccoun
   query.set(nuevo).execute(conn)
 }
 
-pub fn username_existe(conn: &mut PgConnection, user_name: String) -> Result<bool, diesel::result::Error> { // true si existe username en la base de datos
+pub fn username_existe(conn: &mut PgConnection, user_name: &String) -> Result<bool, diesel::result::Error> { // true si existe username en la base de datos
   use diesel::dsl::count_star;    // llamada al conteo de usernames
   let count: i64 = usuario
       .filter(username.eq(user_name))
@@ -211,11 +211,7 @@ pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_inpu
   let inserted_id = insert_into(auth_tokens)
     .values(auth_token)
     .returning(token)
-    .get_result(conn)
-    .map_err(|e| {
-      eprintln!("Error insertando token: {:?}", e);
-      e
-    }); // Para poder obtener un QueryResult ponemos map_err
+    .get_result(conn); // Para poder obtener un QueryResult ponemos map_err
   inserted_id
 }
 
@@ -224,10 +220,6 @@ pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryRes
   .filter(token.eq(token_input))
   .select(user_id)
   .first::<i32>(conn)
-  .map_err(|e| {
-      eprintln!("Error buscando id con el token: {:?}", e);  // Usa eprintln! para debug
-      e  // Devuelve el error en lugar de consumirlo con `()`
-  })
 }
 
 // ..................................................................................................
