@@ -101,58 +101,91 @@ pub fn insert_user(connec: &mut PgConnection, nuevo: NuevoUsuario) -> QueryResul
 }
 
 
-// ..................................................................................................
-  use models::{NuevoAccount, Account};
+// ................................................................................................................................................
+use models::{NuevoAccount, Account};
 use schema::usuario::dsl::{usuario, id as account_id, username, password_hash};
+use bcrypt::{hash, DEFAULT_COST, verify}; // Importamos bcrypt
 
-pub fn insert_usuario(conn: &mut PgConnection, nuevo: NuevoAccount) -> QueryResult<i32> {
-  let inserted_id = insert_into(usuario)
+pub fn insert_usuario(conn: &mut PgConnection, mut nuevo: NuevoAccount) -> QueryResult<i32> {
+  // Hashear la contraseña antes de insertar
+  let hashed_password = hash(&nuevo.password_hash, DEFAULT_COST)
+    .map_err(|e| diesel::result::Error::DeserializationError(Box::new(e)))?;
+  
+  nuevo.password_hash = hashed_password; // Actualizar el campo password_hash con el hash generado
+  let inserted_id = insert_into(usuario)  // Insertar el usuario en la base de datos
     .values(nuevo)
     .returning(account_id)
     .get_result(conn);
   inserted_id
 }
 
-pub fn select_id_usuario(conne: &mut PgConnection, usuario_id: i32) -> Account {
+pub fn select_id_usuario(conn: &mut PgConnection, usuario_id: i32) -> QueryResult<Account> {
   let cuentas = diesel::query_dsl::methods::FindDsl::
-      find(usuario, usuario_id)
-      .select(Account::as_select())
-      .first::<Account>(conne) // Especificamos el tipo aquí
-      .expect("Error al buscar el usuario");
+    find(usuario, usuario_id)
+    .select(Account::as_select())
+    .first::<Account>(conn );
   cuentas
 }
 
+pub fn login_usuario_hashed(conn: &mut PgConnection, user_email: &str, password_plano: &str) -> QueryResult<i32> {
+  let (identificador, contrasenia): (i32, String) = usuario
+      .filter(username.eq(user_email))
+      .select((account_id, password_hash))
+      .first(conn)?;    // posible salida ----> Ok((identificador, contrasenia)) -> QueryResult<(i32, String)>
 
-pub fn login_usuario_hashed(conn: &mut PgConnection, user_email: &str, hashed_password: &str) -> QueryResult<i32> {
-  let cuentas = usuario
-    .filter(username.eq(user_email))
-    .filter(password_hash.eq(hashed_password))
-    .select(account_id)
-    .first::<i32>(conn);
-  match cuentas {
-    Ok(cuenta_id) => Ok(cuenta_id),
-    Err(diesel::result::Error::NotFound) => Ok(0), // Devuelve None si no se encuentra el usuario
-    Err(e) => Err(e), // Propaga otros errores
+  // Verificar la contraseña en texto plano contra el hash almacenado
+  let is_valid = verify(password_plano, &contrasenia)
+      .map_err(|e| diesel::result::Error::DeserializationError(Box::new(e)))?;
+
+  if is_valid {
+      Ok(identificador)
+  } else {
+      Err(diesel::result::Error::NotFound)
   }
 }
+
 
 pub fn update_login(conn: &mut PgConnection, usuario_id: i32, nuevo: NuevoAccount) -> QueryResult<usize> {
   let query = update(usuario.filter(account_id.eq(usuario_id)));
   query.set(nuevo).execute(conn)
 }
 
-// ..................................................................................................
+pub fn username_existe(conn: &mut PgConnection, user_name: String) -> Result<bool, diesel::result::Error> { // true si existe username en la base de datos
+  use diesel::dsl::count_star;    // llamada al conteo de usernames
+  let count: i64 = usuario
+      .filter(username.eq(user_name))
+      .select(count_star())
+      .first::<i64>(conn)?;
+  Ok(count > 0)
+}
+
+pub fn login_usuario_hashed_old(conn: &mut PgConnection, user_email: &str, hashed_password: &str) -> QueryResult<i32> {
+  let cuentas = usuario
+    .filter(username.eq(user_email))
+    .filter(password_hash.eq(hashed_password))
+    .select(account_id)
+    .first::<i32>(conn);  
+
+  cuentas   // se usa de la siguiente manera: abajo el uso
+  // match cuentas {
+  //   Ok(cuenta_id) => { ... cuenta_id },
+  //   Err(DieselError::NotFound) => { ... }, // Devuelve None si no se encuentra el usuario
+  //   Err(e) => Err(e), // Propaga otros errores
+  // }
+}
+// ................................................................................................................................................
 // #[allow(unused_imports)]
 use models::{NuevoAuthToken, Claims};
 use schema::auth_tokens::dsl::{auth_tokens, token, user_id};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use chrono::{Duration, DateTime, Utc};
-fn calculate_expiration() -> DateTime<Utc> {
+
+fn calculate_expiration() -> DateTime<Utc> {    // aun no se usa... será para la generación del token y validaciones.
   let expiration_datetime = Utc::now() + Duration::hours(8);
   expiration_datetime
 }
 // Función para generar el JWT
-pub fn generate_jwt(user_id_input: i32, expira: DateTime<Utc>) -> String {
+pub fn generate_jwt(user_id_input: i32, expira: DateTime<Utc>) -> Result<String, jsonwebtoken::errors::Error> {
   let my_claims = Claims {
       sub: user_id_input,
       exp: expira.timestamp() as usize,  // Expira en 8 horas
@@ -162,13 +195,14 @@ pub fn generate_jwt(user_id_input: i32, expira: DateTime<Utc>) -> String {
   let secret = "KurumiTokisaki453";  // Debes usar una clave más segura en producción
   let encoding_key = EncodingKey::from_secret(secret.as_ref());
 
-  encode(&Header::default(), &my_claims, &encoding_key).unwrap()
-}
+  encode(&Header::default(), &my_claims, &encoding_key)
+}   // esto es solo para tokens (jwt)
 
-pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_input: String, expira_input: DateTime<Utc>) -> QueryResult<String> {
+// creo que sería una actualización de token... por que pide token_input...
+pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_input: &str, expira_input: DateTime<Utc>) -> QueryResult<String> {
   let auth_token = NuevoAuthToken {
     user_id: user_id_input,
-    token: token_input,
+    token: token_input.to_string(),
     dispositivo: None,
     expira: expira_input.naive_utc(),
     activo: true,
@@ -185,7 +219,7 @@ pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_inpu
   inserted_id
 }
 
-pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryResult<i32>{  // si el token no se encuantra (ver ese caso)
+pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryResult<i32>{  // Buscar el ID del usuario a traves del token jwt
   auth_tokens
   .filter(token.eq(token_input))
   .select(user_id)

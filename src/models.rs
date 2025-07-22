@@ -37,35 +37,35 @@ pub struct LoginAccount {   // Logearse legalmente como usuario (post)
     pub username: String,
     pub password_hash: String,
 }
-#[derive(Queryable, Serialize, Selectable, Debug)]
+#[derive(Queryable, Serialize, Selectable, Debug)]      // para mostrar (dashboard)
 #[diesel(table_name = usuario)]
-pub struct Account {    // Obtener datos (get) (Pagina principal del usuario para ver sus datos...)
-    pub nickname: Option<String>,
-    pub perfil: Option<String>,
+pub struct Account {    // Obtener datos (get) (Pagina principal del usuario para ver sus datos... dashboard)
+    pub nickname: Option<String>,   // apodo
+    pub perfil: Option<String>,     // imagen (portada/icon/foto de perfil)
     // pub email: String,
-    pub actualizacion: chrono::NaiveDateTime,
+    pub actualizacion: chrono::NaiveDateTime,       // Última actualización de la cuenta (contraseña, foto, etc)
     // pub activo: bool,
     // pub creado: chrono::NaiveDateTime,
 }
 #[derive(Insertable, Deserialize, Serialize, Clone, AsChangeset)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = usuario)]
-pub struct NuevoAccount {  // Struct para insertar datos en la base de datos (INSERT, UPDATE) (post, put)
-    pub nickname: Option<String>,
-    pub perfil: Option<String>,
-    pub username: String,
-    pub password_hash: String,
-    pub email: String,
-    pub actualizacion: NaiveDateTime,
+pub struct NuevoAccount {  // Struct para insertar datos en la base de datos (INSERT, UPDATE) (post, put) (Para nuevos usuario y para configuración o edit de perfil)
+    pub nickname: Option<String>,       // Apodo
+    pub perfil: Option<String>,     // Imagen de perfil 
+    pub username: String,       // gmail, o con lo que ingresará por arriba ---> LoginAccount ...
+    pub password_hash: String,      // Contraseña o con lo que ingresará por abajo ---> LoginAccount ...
+    pub email: String,      // gmail, para recuperacion de la cuenta
+    pub actualizacion: NaiveDateTime,   // Última actualización hecho sobre la cuenta
 }
-
-
+// *-*-*-*-*-*-*-*-* Finalización para el manejo de la Cuenta *-*-*-*-*-*-*-*-*
+// ------------------- Clave para poder recuperar cuenta -------------------
 #[derive(Queryable, Serialize, Debug)]  // Queryable para obtener datos de la base de datos con ID 
 pub struct Recuperacion {  // Struct para obtener datos de la base de datos (SELECT)
-    pub id: i32,
-    pub user_id: i32,
-    pub token: String,
-    pub tipo: bool,
-    pub expira: NaiveDateTime,
+    pub id: i32,        // id de la tabla de recuperacion
+    pub user_id: i32,       // id del usuario a recuperar...?
+    pub token: String,      // token para su ingreso...?
+    pub tipo: bool,     // true si la recuperación es válida
+    pub expira: NaiveDateTime,      // fecha de expiración de la cable para poder recuperar...?
     // #[serde(with = "chrono::serde::ts_seconds")]
     // pub expira: DateTime<Utc>,
 }
@@ -78,7 +78,10 @@ pub struct NuevoRecuperacion {  // Struct para insertar datos en la base de dato
     pub tipo: bool,
     pub expira: NaiveDateTime,
 }
+// *-*-*-*-*-*-*-*-* Finalización para la recuperación *-*-*-*-*-*-*-*-*
 
+
+// ------------------- Tokenización para seguridad -------------------
 #[derive(Insertable, Deserialize, Serialize, AsChangeset, Clone)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = auth_tokens)]
 pub struct NuevoAuthToken {  // Struct para insertar datos en la base de datos (INSERT)
@@ -98,12 +101,13 @@ pub struct AuthToken {
     pub expira: NaiveDateTime,
     pub activo: bool,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)] // no base de datos.
 pub struct Claims {
     pub sub: i32,      // user_id
     pub exp: usize,    // Expiration time
     pub iss: String,   // Issuer (tu dominio)
 }
+/// *-*-*-*-*-*-*-*-* Finalización de la tokenización de la seguridad *-*-*-*-*-*-*-*-*
   
   
 //   CREATE TABLE sessions (

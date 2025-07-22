@@ -1,5 +1,7 @@
 use crate::establish_connection;
 use actix_web::{get,post, put,web, HttpResponse, Responder};
+use jsonwebtoken::errors::Error;
+use jsonwebtoken::Validation;
 
 
 #[get("/check")]    // Comprobar la conexión con la base de datos con diesel/rust
@@ -80,7 +82,7 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
         // "usuario": user.into_inner().nombre.clone(), // Error no puede mostrar el nombre
         "filas_actualizadas": rows_updated
     })),
-    Err(_) => HttpResponse::InternalServerError().json(json!({
+    Err(_) => HttpResponse::InternalServerError().json(json!({    // internal server para error con la base de datos
         "error": "Error al actualizar el usuario"
     }))
 }
@@ -91,22 +93,35 @@ use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashe
 use actix_web::HttpRequest;
 // --------------------------------------------------------------------------------------------
 //  select_id_token   Se encarga de las acciones con la autenticación obtenida
-#[post("/usuario")]
+#[post("/usuario")]   // dashboard (acciones con token jwt...), sesiones
 pub async fn show_login(req: HttpRequest) -> impl Responder {
     // Leer el token del encabezado Authorization
-  let token_input = match req.headers().get("Authorization") {
-    Some(header_value) => {
-      let token_str = header_value.to_str().unwrap_or("").trim();
-      token_str.strip_prefix("Bearer ").unwrap_or(token_str).to_string()
-    },
-    None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
+    let token_input = match req.headers().get("Authorization") {
+      Some(header_value) => {
+        let token_str = match header_value.to_str() {
+          Ok(s) => s.trim(),
+          Err(_) => return HttpResponse::BadRequest().body("Encabezado Authorization inválido"),
+        };
+        if !token_str.starts_with("Bearer ") {
+          return HttpResponse::BadRequest().body("Formato de token inválido, se esperaba 'Bearer '");
+        }
+        let token = token_str.strip_prefix("Bearer ").expect("El prefijo 'Bearer ' ya fue verificado");
+        if token.is_empty() {
+          return HttpResponse::Unauthorized().body("Token no proporcionado");
+        }
+        token.to_string()
+      }
+      None => return HttpResponse::Unauthorized().body("Token no proporcionado"),
   };
-  let mut conn = establish_connection();
-  let id_usuario_find = match select_id_token(&mut conn, token_input) {
+  let mut conn = establish_connection();      // mejorar haciendo una respuesta https::internal error data base o algo así
+  let id_usuario_find = match select_id_token(&mut conn, token_input) { // busca el id del usuario a traves del token jwt en la base de datos con esa función
     Ok(id) => id,
     Err(_) => return HttpResponse::Unauthorized().body("Token inválido o expirado"),
 };
-  let usuario_encontrado = select_id_usuario(&mut conn, id_usuario_find);
+  let usuario_encontrado =  match select_id_usuario(&mut conn, id_usuario_find){  // select * from usuario where id = id; es lo que hace mi función select_id
+    Ok(id) => id,
+    Err(_) => return HttpResponse::InternalServerError().body("No se pudo obtener los datos del usuario."),
+  };
   HttpResponse::Ok().json(json!({
     "usuario": usuario_encontrado
   }))
@@ -119,34 +134,54 @@ pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
   let usuario_login = user.into_inner();
   let identidad = login_usuario_hashed(&mut conn, usuario_login.username.as_str(), usuario_login.password_hash.as_str());
   match identidad {
-    Ok(identidad)
-      if identidad != 0 => {
-        let expira = calculate_expiration();
-        let token = generate_jwt(identidad, expira);
-        let _data_base = insert_auth_token(&mut conn, identidad, token.clone(), expira);
-        HttpResponse::Ok().json(json!({
-          "token": token.clone()
-        }))
-      },
-    Ok(_) => HttpResponse::Unauthorized().json(json!({
-      "error": "Usuario o contraseña incorrectos"
-    })),
-    Err(_) => HttpResponse::InternalServerError().json(json!({
-        "error": "Error al autenticar el usuario"
-    })),
-  }
+    Ok(identidad) => {
+        // if identidad == 0 {
+        //     return HttpResponse::BadRequest().json(json!({ "error": "ID de usuario inválido" }));
+        // }
+      let expira = calculate_expiration();
+      let token = match generate_jwt(identidad, expira) {
+        Ok(token) => token,
+        Err(_) => return HttpResponse::InternalServerError().json(json!({ "error": "Error al generar token" })),
+      };
+      match insert_auth_token(&mut conn, identidad, &token, expira) {
+          Ok(_) => HttpResponse::Ok().json(json!({ "token": token })),
+          Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al almacenar token" }))
+      }
+    }
+    Err(diesel::result::Error::NotFound) => {
+        HttpResponse::Unauthorized().json(json!({ "error": "Usuario o contraseña incorrectos" }))
+    }
+    Err(_) => {
+        HttpResponse::InternalServerError().json(json!({ "error": "Error al autenticar el usuario" }))
+    }
+}
 }
 // --------------------------------------------------------------------------------------------
 // ingresar usuario sin token (insert usuario), retorna los mismos datos (no debería?)
+use crate::username_existe;
 #[post("/register")]
-pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder {
+pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder { 
   let mut conn = establish_connection();
   let usuario_all = user.into_inner();
-  let _identidad = insert_usuario(&mut conn, usuario_all.clone());
-  HttpResponse::Ok().json(json!({
-      "usuario": usuario_all
-  }))
+  // let _identidad: Result<i32, diesel::result::Error> = insert_usuario(&mut conn, usuario_all.clone()); // _identidad : Result<i32, Error> falta match
+  match username_existe(&mut conn, usuario_all.username.clone()) {
+    Ok(false) => {
+      match insert_usuario(&mut conn, usuario_all.clone()) {
+        Ok(_id) => {        // Registro exitoso
+          HttpResponse::Ok().json(json!({
+            "usuario": usuario_all
+          }))
+        },
+        Err(e) => {        // Falló al insertar usuario
+          HttpResponse::InternalServerError().body(format!("Error al registrar: {}", e))
+        }
+      }
+    },
+    Ok(true) => HttpResponse::Conflict().body("El nombre de usuario ya está en uso"),
+    Err(e) => HttpResponse::InternalServerError().body(format!("Error de base de datos: {}", e)),
+  }
 }
+// generación de token (para su sesión luego del register, así evitar que ingrese su cuenta...)
 // --------------------------------------------------------------------------------------------
 // Actualizar los datos de usuario (update login)
 #[put("/login/{id}")]
@@ -173,10 +208,14 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
 
   let auth_token = user.into_inner();
   let expira = calculate_expiration();
-  let token = generate_jwt(auth_token.user_id, expira);
-  let _data_base = insert_auth_token(&mut conn, auth_token.user_id, token.clone(), expira);
+  let token = match generate_jwt(auth_token.user_id, expira){ 
+  // let token = match generate_jwt(identidad, expira) {
+    Ok(token) => token,
+    Err(_) => return HttpResponse::InternalServerError().json(json!({ "error": "Error al generar token" })),
+  };
+  let _data_base = insert_auth_token(&mut conn, auth_token.user_id, &token, expira);  // token : &str
   HttpResponse::Ok().json(json!({
-      "auth_token": token.clone()
+      "auth_token": token
   }))
 }
 
