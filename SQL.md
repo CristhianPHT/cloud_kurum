@@ -13,7 +13,23 @@ sudo systemctl start postgresql
 ```bash
 sudo -u postgres psql -l
 ```
-
+##### Conectarse con la base de datos:
+```bash
+sudo -i -u postgres
+psql
+```
+Ver las base de datos:
+```bash
+\l
+```
+Conectarse con la base de datos:
+```bash
+\c name_data_base      -- Conectarte a la base de datos llamada "name_data_base"
+```
+Dentro de la conección con una base de datos, poder ver las tablas de esa base de datos:
+```bash
+\dt          -- Ver tablas (si estás dentro de una base)
+```
 ### Crear la base de datos si no existe y asignando a un usuarioX:
 ```bash
 sudo -u postgres createdb -O usuarioXexistente nameXdataBase
