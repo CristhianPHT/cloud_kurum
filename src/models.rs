@@ -133,17 +133,28 @@ pub struct Claims {
 // Biblioteca todo lo de abajo. ------------------------------
 use crate::schema::{libro, capitulos};   // Biblioteca all
 
-#[derive(Queryable, Serialize, Selectable, Debug)]
+// use diesel::prelude::*;
+// use serde::Serialize;
+
+#[derive(Queryable, Serialize)]
 #[diesel(table_name = libro)]
-pub struct Libro {      // Esta Structura como get (json) o select * from libro (postgres)
+pub struct LibroDashboard {
     pub id: i32,
-    pub titulo: String,
-    pub perfil: String,
-    pub sinopsis: String,
-    pub tipo: String,
-    pub capitulos: String,
-    pub publicacion: chrono::NaiveDateTime,
-    pub estado: String,
+    pub titulo: Option<String>,
+    pub perfil: Option<String>,
+}
+
+#[derive(Queryable, Serialize, Selectable)]
+#[diesel(table_name = libro)]
+pub struct Libro {     // Esta Structura como get (json) o select * from libro (postgres)
+    pub id: i32,
+    pub titulo: Option<String>,
+    pub perfil: Option<String>,
+    pub sinopsis: Option<String>,
+    pub tipo: Option<String>,
+    pub capitulos: Option<String>,
+    pub publicacion: chrono::NaiveDate,
+    pub estado: Option<String>,
 }
 
 use chrono::NaiveDate;

@@ -1,4 +1,5 @@
 use crate::establish_connection;
+// use actix_web::http::Error; // ahora no necesario?
 use actix_web::{get,post, put,web, HttpResponse, Responder};
 // #[warn(unused_imports)]
 // use jsonwebtoken::errors::Error;
@@ -118,14 +119,12 @@ pub async fn show_login(req: HttpRequest) -> impl Responder {
   let id_usuario_find = match select_id_token(&mut conn, token_input) { // busca el id del usuario a traves del token jwt en la base de datos con esa función
     Ok(id) => id,
     Err(_) => return HttpResponse::Unauthorized().json(json!({ "error": "Token inválido o expirado" })),
-};
-  let usuario_encontrado =  match select_id_usuario(&mut conn, id_usuario_find){  // select * from usuario where id = id; es lo que hace mi función select_id
-    Ok(id) => id,
-    Err(_) => return HttpResponse::InternalServerError().json(json!({ "error": "No se pudo obtener los datos del usuario." })),
   };
-  HttpResponse::Ok().json(json!({
-    "usuario": usuario_encontrado
-  }))
+  let usuario_encontrado =  match select_id_usuario(&mut conn, id_usuario_find){  // select * from usuario where id = id; es lo que hace mi función select_id
+    Ok(encontrado) => HttpResponse::Ok().json(json!({"usuario": encontrado})),
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "No se pudo obtener los datos del usuario." })),
+  };
+  usuario_encontrado
 }
 // --------------------------------------------------------------------------------------------
 // insert_auth_token con username y password para obtener el authtoken
@@ -255,8 +254,36 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
 
 // ---------------------------------------------------------------------------------------------
 // -----------------------------------------libros----------------------------------------------
-// use crate::models::{NuevoLibro, Libro};
+use crate::models::NuevoLibro;  // Libro, LibroDashboard por ahora no usados directamente
+use crate::{select_nombre_libros, insert_libro_nuevo, select_libro_main};
+#[get("/dashboard")]
+pub async fn get_libro_all() -> impl Responder {
+  let mut conn = establish_connection();
+  // let user_id = id.into_inner();
+  match select_nombre_libros(&mut conn) {
+    Ok(libros) => HttpResponse::Ok().json(json!({ "libros": libros })), // Vec<LibroDashboard>
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
+  }
+}
 
+#[post{"/nuevolibro"}]
+pub async fn post_nuevo_libro(param: web::Json<NuevoLibro>) -> impl Responder {
+  let mut conn = establish_connection();
+  let nuevo_librito = param.into_inner();
+  match insert_libro_nuevo(&mut conn, nuevo_librito) {
+    Ok(id) => HttpResponse::Ok().json(json!({ "libro_id": id })), // QueryResult<i32>
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // QueryResult<Error>
+  }
+}
+#[get("/libro/{id}")]
+pub async fn get_libro_unique(id: web::Path<i32>) -> impl Responder {
+  let mut conn = establish_connection();
+  let libro_id = id.into_inner();
+  match select_libro_main(&mut conn, libro_id) {
+    Ok(libro) => HttpResponse::Ok().json(json!({ "data": libro })), // Vec<LibroDashboard>
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
+  }
+}
 // #[get("/generica/{id}")]
 // pub async fn get_libro_data(id: web::Path<i32>) -> impl Responder {
 //   let mut conn = establish_connection();
@@ -276,3 +303,4 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
 //       "usuario": nuevo_usuario
 //   }))
 // }
+

@@ -1,3 +1,4 @@
+// use actix_web::web::Query;
 use diesel::prelude::*;
 use diesel::query_dsl::methods::{FindDsl, OffsetDsl, LimitDsl};
 use dotenv::dotenv;
@@ -242,7 +243,6 @@ where
   table.find(id_clave).first(conn)
 }
 
-
 use diesel::insertable::CanInsertInSingleQuery; //use diesel::Table;
 use diesel::query_builder::{InsertStatement, QueryFragment, QueryId};
 use diesel::query_dsl::methods::ExecuteDsl;
@@ -261,5 +261,29 @@ where
     diesel::insert_into(table).values(data).execute(conn)
 }
 
-// ---------------------------------------------------------------------------------------------
-// --------------------------------------Libros--------------------------------------------------
+// ................................................................................................................................................
+// ---------------------------------------------------Libros---------------------------------------------------------------
+// use diesel::dsl::load;
+// use diesel::prelude::RunQueryDsl; load
+use crate::models::{Libro, LibroDashboard, NuevoLibro};
+use schema::libro::dsl::{libro, titulo, id as libro_id_all, perfil};
+
+pub fn select_nombre_libros(conn: &mut PgConnection) -> Result<Vec<LibroDashboard>, diesel::result::Error> {
+  libro
+    .select((libro_id_all, titulo, perfil))   //.select(Libro::as_select()) //seŕia otra opcion
+    .load::<LibroDashboard>(conn)
+}
+
+pub fn insert_libro_nuevo(conn : &mut PgConnection, nuevo_libro : NuevoLibro) -> QueryResult<i32> {
+  let salida = insert_into(libro)
+    .values(nuevo_libro)
+    .returning(libro_id_all)
+    .get_result(conn);
+  salida
+}
+pub fn select_libro_main(conn: &mut PgConnection, identificador: i32) -> QueryResult<Libro>{
+  let test = libro
+    .filter(libro_id_all.eq(identificador))
+    .first::<Libro>(conn);
+  test
+}

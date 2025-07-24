@@ -66,7 +66,7 @@ diesel::table! {
         id -> Int4,
         #[max_length = 100]
         titulo -> Nullable<Varchar>,
-        perfil -> Nullable<Varchar>,
+        perfil -> Nullable<Text>,
         sinopsis -> Nullable<Text>,
         #[max_length = 100]
         tipo -> Nullable<Varchar>,
