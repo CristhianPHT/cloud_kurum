@@ -131,7 +131,7 @@ pub struct Claims {
 
 
 // Biblioteca todo lo de abajo. ------------------------------
-use crate::schema::{libro, capitulos};   // Biblioteca all
+use crate::schema::libro;   // Biblioteca all
 
 // use diesel::prelude::*;
 // use serde::Serialize;
@@ -161,7 +161,7 @@ use chrono::NaiveDate;
 
 #[derive(Insertable, Deserialize, Serialize, Clone)]  
 #[diesel(table_name = libro)]
-pub struct NuevoLibro {
+pub struct NuevoLibro {     // Struct para insert sobre la base de datos sobre un libro
     pub titulo: String,
     pub perfil: Option<String>,
     pub sinopsis: Option<String>,
@@ -170,6 +170,42 @@ pub struct NuevoLibro {
     pub publicacion: NaiveDate,     // NaiveDate por que en la base de datos es type Date (solo fecha)
     pub estado: String,
 }
+// -------------------------------------------- Género ------------------------------------------------
+use crate::schema::{genero, capitulos};
+#[derive(Queryable, Serialize)]
+#[diesel(table_name = genero)]
+pub struct Genero {
+    pub id: i32,
+    pub nombre: Option<String>,
+    pub descripcion: Option<String>,
+}
+#[derive(Insertable, Deserialize, Serialize)]
+#[diesel(table_name = genero)]
+pub struct NuevoGenero {
+    pub nombre: String,
+    pub descripcion: Option<String>,
+}
+// ----------------------------------------------------------------------
+use crate::schema::libro_genero;
+
+#[derive(Insertable, Deserialize)]
+#[diesel(table_name = libro_genero)]
+pub struct NuevoLibroGenero {
+    pub libro_id: i32,
+    pub genero_id: i32,
+}
+use diesel::Associations;
+use diesel::Identifiable;
+#[derive(Queryable, Identifiable, Associations)]
+#[diesel(belongs_to(Libro))]
+#[diesel(belongs_to(Genero))]
+#[diesel(table_name = libro_genero)]
+pub struct LibroGenero {
+    pub id: i32,
+    pub libro_id: i32,
+    pub genero_id: i32,
+}
+// ---------------------------------------------
 
 
 #[derive(Queryable, Serialize, Selectable, Debug)]

@@ -1,3 +1,4 @@
+// use actix_web::http::Error;
 // use actix_web::web::Query;
 use diesel::prelude::*;
 use diesel::query_dsl::methods::{FindDsl, OffsetDsl, LimitDsl};
@@ -287,3 +288,73 @@ pub fn select_libro_main(conn: &mut PgConnection, identificador: i32) -> QueryRe
     .first::<Libro>(conn);
   test
 }
+// ................................................................................................................................................
+// ---------------------------------------------------Generos---------------------------------------------------------------
+use crate::models::{Genero, NuevoGenero};
+use schema::genero::dsl::{genero,id as gen_id}; //... --- , nombre as gen_nombre, descripcion as gen_descripcion
+pub fn insert_gen_new(conn: &mut PgConnection, gen_new: NuevoGenero) -> QueryResult<i32> {  // Ingresar un nuevo género
+  let query = insert_into(genero)
+    .values(gen_new)
+    .returning(gen_id)
+    .get_result(conn);
+  query
+}
+pub fn select_gen_unico(conn: &mut PgConnection, identificar: i32) -> QueryResult<i32> {    // Seleccionamos sólo un género
+  diesel::QueryDsl::find(genero, identificar)  // solo una vez
+      .select(gen_id)
+      .first::<i32>(conn)
+}
+pub fn select_gen_all(conn: &mut PgConnection) -> Result<Vec<Genero>, diesel::result::Error> {    // Seleccionamos todos los géneros
+  genero
+    .load::<Genero>(conn)
+}
+///////////////////////////////////////// Conección con múltiples tablas (Libro - Género) ///////////////////////////////////
+use crate::models::NuevoLibroGenero;
+use crate::schema::libro_genero::dsl::{libro_genero, id as libro_genero_id};
+
+// INSERT - Relacionar libro con género
+pub fn insert_libro_genero( conn: &mut PgConnection, lib_gen_data: NuevoLibroGenero) -> QueryResult<i32> {
+    // let nuevo = NuevoLibroGenero {
+    //     libro_id: libro_id_val,
+    //     genero_id: genero_id_val,
+    // };
+
+    insert_into(libro_genero)
+        .values(&lib_gen_data)
+        .returning(libro_genero_id)
+        .get_result(conn)
+}
+// ------------------------------------------------------------------------------------------------------------------
+
+#[derive(Debug)]
+pub enum OrdenamientoLibro {
+    TituloAsc,
+    TituloDesc,
+    FechaAsc,
+    FechaDesc,
+}
+pub fn buscar_libros_por_genero( conn: &mut PgConnection, id_genero: i32, pagina: i64, orden: OrdenamientoLibro) -> QueryResult<Vec<Libro>> {
+  use crate::schema::{libro, libro_genero};
+  use diesel::prelude::*;
+
+  let resultados_por_pagina = 10;
+  let offset = (pagina - 1) * resultados_por_pagina;
+
+  let mut query = libro::table
+      .inner_join(libro_genero::table.on(libro_genero::libro_id.eq(libro::id)))
+      .filter(libro_genero::genero_id.eq(id_genero))
+      .select(libro::all_columns)
+      .into_boxed();
+
+  query = match orden {
+      OrdenamientoLibro::TituloAsc => query.order(libro::titulo.asc()),
+      OrdenamientoLibro::TituloDesc => query.order(libro::titulo.desc()),
+      OrdenamientoLibro::FechaAsc => query.order(libro::publicacion.asc()),
+      OrdenamientoLibro::FechaDesc => query.order(libro::publicacion.desc()),
+  };
+
+  let query = diesel::QueryDsl::limit(query, resultados_por_pagina);
+  diesel::QueryDsl::offset(query, offset).load::<Libro>(conn)
+}
+
+

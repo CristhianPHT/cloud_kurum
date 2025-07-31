@@ -15,7 +15,7 @@ pub async fn health_check() -> impl Responder {
         Err(_) => HttpResponse::InternalServerError().body("Error al conectar con la base de datos"),
     }
 }
-use crate::models::{NuevoUsuario, Usuario, UsuarioUpdate}; // Libro, NuevoLibro Eliminados por no usarlos (warning)
+use crate::models::{NuevoGenero, NuevoLibroGenero, NuevoUsuario, Usuario, UsuarioUpdate}; // Libro, NuevoLibro Eliminados por no usarlos (warning)
 use crate::{select_all_users, select_id, insert_user, update_user_id}; // , update_user_id
 use serde_json::json;
 
@@ -270,9 +270,9 @@ pub async fn get_libro_all() -> impl Responder {
 pub async fn post_nuevo_libro(param: web::Json<NuevoLibro>) -> impl Responder {
   let mut conn = establish_connection();
   let nuevo_librito = param.into_inner();
-  match insert_libro_nuevo(&mut conn, nuevo_librito) {
+  match insert_libro_nuevo(&mut conn, nuevo_librito) {    // falta verificar si ya hay para no duplicados
     Ok(id) => HttpResponse::Ok().json(json!({ "libro_id": id })), // QueryResult<i32>
-    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // QueryResult<Error>
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error generar nuevos libros" })), // QueryResult<Error>
   }
 }
 #[get("/libro/{id}")]
@@ -284,6 +284,46 @@ pub async fn get_libro_unique(id: web::Path<i32>) -> impl Responder {
     Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
   }
 }
+// ---------------------------------------------------------------------------------------------
+// -----------------------------------------genero----------------------------------------------
+use crate::insert_gen_new;
+#[post("/nuevogenero")]
+pub async fn post_nuevo_genero(param: web::Json<NuevoGenero>) -> impl Responder {
+  let mut conn = establish_connection();
+  let nuevo_genero = param.into_inner();
+  match insert_gen_new(&mut conn, nuevo_genero) {
+    Ok(id) => HttpResponse::Ok().json(json!({ "genero_id": id })), // QueryResult<i32>
+    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al ingresar un nuevo genero" })), // QueryResult<Error>
+  }
+}
+
+use crate::{insert_libro_genero,buscar_libros_por_genero, OrdenamientoLibro};
+#[post("/nuevolibroxgenero")]
+pub async fn post_nuevo_libro_genero(param: web::Json<NuevoLibroGenero>) -> impl Responder {
+  let mut conn = establish_connection();
+  let data = param.into_inner();
+  match insert_libro_genero(&mut conn, data) {
+    Ok(i322) => HttpResponse::Ok().json(json!({"id": i322})),
+    Err(_) => HttpResponse:: InternalServerError().json(json!({ "Error": "Error al ingresar los datos"}))
+  }
+}
+
+#[get("/busqueda_libro_genero/{pagina}")]
+pub async fn get_buscar_lib_gen( pagina: web::Path<i64>,  // Cambiado a i64 para coincidir con tu función get_buscar_lib_gen,post_nuevo_genero
+) -> impl Responder {
+    let mut conn = establish_connection();
+    match buscar_libros_por_genero(&mut conn, 1, pagina.into_inner(), OrdenamientoLibro::TituloAsc) {
+        Ok(busqueda) => HttpResponse::Ok().json(json!({ "libros": busqueda })), 
+        Err(e) => {
+            eprintln!("Error en búsqueda: {:?}", e); // Log simple en consola
+            HttpResponse::InternalServerError().json(json!({ "error": "Falló la búsqueda" }))
+        }
+    }
+}
+
+
+// insert_libro_genero
+
 // #[get("/generica/{id}")]
 // pub async fn get_libro_data(id: web::Path<i32>) -> impl Responder {
 //   let mut conn = establish_connection();

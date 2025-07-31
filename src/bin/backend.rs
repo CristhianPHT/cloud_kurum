@@ -4,7 +4,8 @@ use actix_cors::Cors;  // Importa Cors para habilitar CORS en la aplicación
 use dotenv::dotenv;
 use nube_kurum::web::interface::{health_check, show_users, show_user, create_user, update_user};
 use nube_kurum::web::interface::{show_login, insert_login, update_usuario_login, login_usuario};
-use nube_kurum::web::interface::{get_libro_all, post_nuevo_libro, get_libro_unique};
+use nube_kurum::web::interface::{get_libro_all, post_nuevo_libro, get_libro_unique, post_nuevo_libro_genero};
+use nube_kurum::web::interface::{get_buscar_lib_gen,post_nuevo_genero}; //test
 use nube_kurum::web::interface::auth_user;
 // use nube_kurum::web::interface::{select_generica,insert_generica};
 
@@ -30,6 +31,9 @@ async fn main() -> std::io::Result<()> {
           .service(get_libro_all)
           .service(get_libro_unique)
           .service(post_nuevo_libro)
+          .service(post_nuevo_libro_genero)
+          .service(get_buscar_lib_gen)
+          .service(post_nuevo_genero)
           // .service(select_generica)
           // .service(insert_generica)
           .wrap(

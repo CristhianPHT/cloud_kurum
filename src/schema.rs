@@ -81,8 +81,8 @@ diesel::table! {
 diesel::table! {
     libro_genero (id) {
         id -> Int4,
-        libro_id -> Nullable<Int4>,
-        genero_id -> Nullable<Int4>,
+        libro_id -> Int4,
+        genero_id -> Int4,
     }
 }
 

@@ -46,8 +46,8 @@ CREATE TABLE scan (
 -- Tabla LibroGenero
 CREATE TABLE libro_genero (
     id SERIAL PRIMARY KEY,
-    libro_id INT REFERENCES libro(id),
-    genero_id INT REFERENCES genero(id)
+    libro_id INT NOT NULL REFERENCES libro(id),
+    genero_id INT NOT NULL   REFERENCES genero(id)
 );
 
 -- Tabla Puntaje
