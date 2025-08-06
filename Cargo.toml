@@ -15,3 +15,8 @@ tokio = { version = "1", features = ["full"] }  # Para manejar hilos y tareas as
 chrono = { version = "0.4", features = ["serde"] } # Para la utilización correcta de fechas
 bcrypt = "0.17"  # Para hashear y verificar contraseñas
 jsonwebtoken = "9.3"
+# AWS SDK for R2 (Cloudflare) integration
+aws-sdk-s3 = "1.0"
+aws-config = "1.0"
+uuid = { version = "1.0", features = ["v4"] }  # Para generar IDs únicos
+image = "0.25"  # Para procesamiento de imágenes (opcional)

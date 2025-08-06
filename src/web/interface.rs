@@ -151,7 +151,7 @@ pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
     Err(_) => {
         HttpResponse::InternalServerError().json(json!({ "error": "Error al autenticar el usuario" }))
     }
-}
+  }
 }
 // --------------------------------------------------------------------------------------------
 // ingresar usuario sin token (insert usuario), retorna los mismos datos (no debería?)

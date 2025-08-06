@@ -18,6 +18,73 @@ Este proyecto es una API backend construida con **Actix Web** y **Diesel ORM** p
 
 Este es un resumen de los archivos y directorios más importantes del proyecto:
 
+### 📁 Nueva Estructura Modular
+
+El código ha sido reorganizado en módulos especializados para mejorar la mantenibilidad y escalabilidad:
+
+#### 🔧 **Módulos Creados:**
+
+1. **`modules/database.rs`** - Funciones de conexión y utilidades genéricas
+   - `establish_connection()` - Establece conexión a PostgreSQL
+   - `select_by_id()` - Función genérica para seleccionar por ID
+   - `generic_insert()` - Función genérica para insertar datos
+
+2. **`modules/usuarios.rs`** - Operaciones con la tabla `usuariosss`
+   - `select_id()` - Seleccionar usuario por ID
+   - `select_all_users()` - Obtener todos los usuarios con paginación
+   - `update_user_id()` - Actualizar usuario por ID
+   - `insert_user()` - Insertar nuevo usuario
+
+3. **`modules/account.rs`** - Funciones de autenticación y login
+   - `insert_usuario()` - Crear nueva cuenta con hash de contraseña
+   - `login_usuario_hashed()` - Autenticar usuario con bcrypt
+   - `username_existe()` - Verificar si existe el nombre de usuario
+   - `select_id_usuario()` - Obtener cuenta por ID
+   - `update_login()` - Actualizar datos de login
+
+4. **`modules/auth.rs`** - Manejo de tokens JWT
+   - `generate_jwt()` - Generar token JWT
+   - `insert_auth_token()` - Guardar token en base de datos
+   - `select_id_token()` - Obtener usuario por token
+   - `calculate_expiration()` - Calcular fecha de expiración
+
+5. **`modules/libros.rs`** - Operaciones con libros
+   - `select_nombre_libros()` - Obtener lista de libros para dashboard
+   - `insert_libro_nuevo()` - Insertar nuevo libro
+   - `select_libro_main()` - Obtener libro por ID
+
+6. **`modules/generos.rs`** - Operaciones con géneros
+   - `insert_gen_new()` - Insertar nuevo género
+   - `select_gen_all()` - Obtener todos los géneros
+   - `select_gen_unico()` - Obtener género por ID
+
+7. **`modules/relaciones.rs`** - Relaciones entre tablas (libro-género)
+   - `insert_libro_genero()` - Relacionar libro con género
+   - `buscar_libros_por_genero()` - Buscar libros filtrados por género
+   - `OrdenamientoLibro` - Enum para ordenamiento de resultados
+
+#### ✅ **Ventajas de esta organización:**
+
+- **Mantenibilidad**: Código más fácil de encontrar y modificar
+- **Escalabilidad**: Fácil agregar nuevas funciones a cada módulo  
+- **Legibilidad**: Estructura clara y lógica
+- **Reutilización**: Módulos independientes y reutilizables
+- **Compatibilidad**: Mantiene la API existente gracias a los re-exports
+
+#### 🔄 **Uso del código:**
+
+El código existente sigue funcionando igual. Puedes usar las funciones como antes:
+```rust
+use nube_kurum::insert_usuario;  // Función directa
+```
+
+O usar los módulos específicos:
+```rust
+use nube_kurum::usuarios::select_id;    // Desde módulo específico
+use nube_kurum::account::login_usuario_hashed;
+use nube_kurum::libros::insert_libro_nuevo;
+```
+
 ### Archivos Principales
 
 - **`bin/backend.rs`**: Es el archivo de entrada de la aplicación. Aquí se configura la conexión a la base de datos y se inician las rutas y el servidor web con Actix.
@@ -57,5 +124,61 @@ generando un archivo schema.rs por defecto que utilizarás
 
 
 ## Tablas Principales:
-Usuario, Libro, 
+Usuario, Libro,
 
+## Cloudflare R2
+Cloudfrare R2 es almacenamiento privado (no muestra imágenes por sí solo).
+
+#### Necesitas:
+
+- POST /imagen/perfil → sube imagen a R2 y guarda la key en PostgreSQL.
+- GET /imagen/perfil → obtiene la key, verifica el JWT, descarga imagen de R2 y la devuelve.
+
+#### Tu backend:
+- Verifica el token JWT.
+- Usa las Access Key y Secret Key de R2 para conectar.
+- Sirve las imágenes protegidas como una API segura.
+#### No se guardan URLs públicas, solo claves (keys) internas.
+
+# Para poder implementar la API de imágenes se requiere reestructurar los archivos y carpetas.
+src/
+├── bin/
+│   └── backend.rs                 # Punto de entrada
+├── lib.rs                         # Configuración y exports principales
+├── config/
+│   ├── mod.rs                     # Configuración de la app
+│   ├── database.rs                # Setup de DB
+│   └── cloudflare.rs              # Setup de R2
+├── models/
+│   ├── mod.rs
+│   ├── user.rs                    # Modelos de usuario
+│   ├── book.rs                    # Modelos de libros
+│   ├── auth.rs                    # Modelos de autenticación
+│   └── image.rs                   # Modelos de imágenes (NUEVO)
+├── repositories/
+│   ├── mod.rs
+│   ├── user_repository.rs         # Acceso a datos de usuarios
+│   ├── book_repository.rs         # Acceso a datos de libros
+│   └── image_repository.rs        # Acceso a datos de imágenes (NUEVO)
+├── services/
+│   ├── mod.rs
+│   ├── user_service.rs            # Lógica de negocio usuarios
+│   ├── book_service.rs            # Lógica de negocio libros
+│   ├── auth_service.rs            # Lógica de autenticación
+│   └── image_service.rs           # Lógica de imágenes R2 (NUEVO)
+├── handlers/
+│   ├── mod.rs
+│   ├── user_handler.rs            # Endpoints de usuarios
+│   ├── book_handler.rs            # Endpoints de libros
+│   ├── auth_handler.rs            # Endpoints de auth
+│   └── image_handler.rs           # Endpoints de imágenes (NUEVO)
+├── middleware/
+│   ├── mod.rs
+│   ├── auth.rs                    # Middleware de autenticación
+│   └── cors.rs                    # Configuración CORS
+├── utils/
+│   ├── mod.rs
+│   ├── jwt.rs                     # Utilidades JWT
+│   ├── validation.rs              # Validaciones
+│   └── r2_client.rs               # Cliente R2 (NUEVO)
+└── schema.rs                      # Esquema Diesel (como está)
