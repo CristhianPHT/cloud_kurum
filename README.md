@@ -114,6 +114,7 @@ pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Usuario {  // para
 }
 ```
 
+
 ## Creación de tablas SQL en terminal:
 diesel migrations generate name_file -----> from reference `https://diesel.rs/guides/getting-started`
 ### Correr el programa y migrar a postgres psql
@@ -139,6 +140,7 @@ Cloudfrare R2 es almacenamiento privado (no muestra imágenes por sí solo).
 - Usa las Access Key y Secret Key de R2 para conectar.
 - Sirve las imágenes protegidas como una API segura.
 #### No se guardan URLs públicas, solo claves (keys) internas.
+
 
 # Para poder implementar la API de imágenes se requiere reestructurar los archivos y carpetas.
 src/
@@ -182,3 +184,40 @@ src/
 │   ├── validation.rs              # Validaciones
 │   └── r2_client.rs               # Cliente R2 (NUEVO)
 └── schema.rs                      # Esquema Diesel (como está)
+## Patrón Arquitectónico
+
+El proyecto sigue una arquitectura en capas:
+
+- Handlers: Exponen endpoints HTTP
+- Services: Contienen lógica de negocio
+- Repositories: Acceso a datos
+- Models: Representación de entidades
+
+#### -------------------
+architecture.md debería tener:
+
+Patrón arquitectónico
+
+Estructura de carpetas
+
+Tecnologías usadas
+
+Decisiones importantes
+
+Dependencias externas
+
+flow.md debería tener:
+
+Flujo de autenticación
+
+Flujo de creación de libro
+
+Flujo de subida de imagen
+
+Flujo de refresh token (si existe)
+#### -------------------
+Guardarlos en /docs/flow.md:
+Diagrama de casos de uso:...
+Sección “Estado Actual” 
+
+Sección “Versión Ideal / Meta”
