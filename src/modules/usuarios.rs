@@ -4,6 +4,10 @@ use diesel::dsl::update;
 use diesel::prelude::*;
 use diesel::query_dsl::methods::{LimitDsl, OffsetDsl};
 
+// -------------------------------------------------------------
+// Programa testing, usuariosss, basico para probar la conexion a la base de datos siguiendo la estructura ORM de Diesel.
+// -------------------------------------------------------------
+
 pub fn select_id(
     conn: &mut PgConnection,
     usuario_id: i32,

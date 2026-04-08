@@ -42,10 +42,7 @@ pub struct LoginAccount {   // Logearse legalmente como usuario (post)
 pub struct Account {    // Obtener datos (get) (Pagina principal del usuario para ver sus datos... dashboard)
     pub nickname: Option<String>,   // apodo
     pub perfil: Option<String>,     // imagen (portada/icon/foto de perfil)
-    // pub email: String,
     pub actualizacion: chrono::NaiveDateTime,       // Última actualización de la cuenta (contraseña, foto, etc)
-    // pub activo: bool,
-    // pub creado: chrono::NaiveDateTime,
 }
 #[derive(Insertable, Deserialize, Serialize, Clone, AsChangeset)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = usuario)]

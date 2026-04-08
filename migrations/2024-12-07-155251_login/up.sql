@@ -4,17 +4,7 @@ CREATE TABLE usuariosss (
   apellido VARCHAR (60)
 );
 
-CREATE TABLE usuario (
-  id SERIAL PRIMARY KEY,
-  nickname VARCHAR UNIQUE,
-  perfil TEXT, -- imagen/link
-  username VARCHAR UNIQUE NOT NULL,
-  password_hash VARCHAR NOT NULL,
-  email VARCHAR UNIQUE NOT NULL,
-  actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  activo BOOLEAN NOT NULL DEFAULT true,
-  creado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+abx
 
 CREATE TABLE token_recuperacion (
   id SERIAL PRIMARY KEY,

@@ -39,7 +39,7 @@ pub async fn show_users() -> impl Responder {
     //     "id": usuario.id,
     //     "nombre": usuario.nombre,
     //     "apellido": usuario.apellido
-    //   })
+    //   }) 
     //   .to_string()).collect::<Vec<String>>().join(",");
     // respuesta = HttpResponse::Ok()
     //   .content_type("application/json")
@@ -87,8 +87,9 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
     Err(_) => HttpResponse::InternalServerError().json(json!({    // internal server para error con la base de datos
         "error": "Error al actualizar el usuario"
     }))
+  }
 }
-}
+
 // --------------------------------------------------------------------------------------------
 use crate::models::{NuevoAccount, LoginAccount};// Account eliminado por no usarlo (warning)
 use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token, select_id_token};
@@ -132,6 +133,11 @@ pub async fn show_login(req: HttpRequest) -> impl Responder {
 pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
   let mut conn = establish_connection();
   let usuario_login = user.into_inner();
+  if usuario_login.username.is_empty() || usuario_login.password_hash.is_empty() {
+    return HttpResponse::BadRequest().json(json!({
+        "error": "Username y contraseña son obligatorios"
+    }));
+  }
   let identidad = login_usuario_hashed(&mut conn, usuario_login.username.as_str(), usuario_login.password_hash.as_str());
   match identidad {
     Ok(identidad) => {
@@ -155,37 +161,59 @@ pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
 }
 // --------------------------------------------------------------------------------------------
 // ingresar usuario sin token (insert usuario), retorna los mismos datos (no debería?)
-use crate::username_existe;
+// use crate::username_existe;
+use diesel::result::{Error, DatabaseErrorKind}; // Error: UniqueViolation, base de datos UNIQUE Violation
 #[post("/register")]
 pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder { 
   let mut conn = establish_connection();
-  let usuario_all = user.into_inner();
-  // let _identidad: Result<i32, diesel::result::Error> = insert_usuario(&mut conn, usuario_all.clone()); // _identidad : Result<i32, Error> falta match
-  match username_existe(&mut conn, &usuario_all.username) {
-    Ok(false) => {
-      match insert_usuario(&mut conn, usuario_all) {
-        Ok(identificacion) => {        // Registro exitoso
-          let expira = calculate_expiration();  // duración 8 horas (lib.rs)
-          let token = match generate_jwt(identificacion, expira) {
-            Ok(token) => token,
-            Err(_) => return HttpResponse::InternalServerError().json(json!({ "error": "Error al generar token" })),
-          };
-          match insert_auth_token(&mut conn, identificacion, &token, expira) {  // insert_auth_token = QueryResult<String>
-              Ok(_) => HttpResponse::Ok().json(json!({ "token": token })),
-              Err(e) => HttpResponse::InternalServerError().json(json!({ "error": format!("Error al almacenar token: {}", e) }))
-          }
-        },
-        Err(e) => HttpResponse::InternalServerError().json(json!({ "error": format!("Error al registrar: {}", e) }))  // Falló al insertar usuario
-
+  let usuario_all = user.into_inner();  // Faltaría la validación de los datos recibidos (vacios o nulos...)
+  if usuario_all.username.trim().is_empty() {
+    return HttpResponse::BadRequest().json(json!({
+        "error": "username vacío"
+    }));
+  }
+  if usuario_all.password_hash.trim().is_empty() {
+      return HttpResponse::BadRequest().json(json!({
+          "error": "password vacío"
+      }));
+  }
+  if usuario_all.password_hash.len() > 128 {
+    return HttpResponse::BadRequest().json(json!({
+        "error": "contraseña demasiado larga (máximo 64 caracteres)"
+    }));
+  }
+  let identificacion = match insert_usuario(&mut conn, usuario_all) {
+    Ok(id) => id,
+    Err(Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _)) => {
+        return HttpResponse::Conflict().json(json!({
+            "error": "El username o email ya está en uso"
+        }));
+    }
+    Err(e) => {
+        return HttpResponse::InternalServerError().json(json!({
+            "error": format!("Error al registrar: {}", e)
+        }));
+    }
+  };
+  let expira = calculate_expiration();
+  let token = match generate_jwt(identificacion, expira) {
+      Ok(token) => token,
+      Err(_) => {
+          return HttpResponse::InternalServerError().json(json!({
+              "error": "Error al generar token"
+          }));
       }
-    },
-    Ok(true) => HttpResponse::Conflict().json(json!({ "error": "El nombre de usuario ya está en uso" })),
-    Err(e) => HttpResponse::InternalServerError().json(json!({ "error": format!("Error de base de datos: {}", e) })),
+  };
+  match insert_auth_token(&mut conn, identificacion, &token, expira) {
+    Ok(_) => HttpResponse::Ok().json(json!({ "token": token })),
+    Err(e) => HttpResponse::InternalServerError().json(json!({
+      "error": format!("Error al almacenar token: {}", e)
+    }))
   }
 }
 // generación de token (para su sesión luego del register, así evitar que ingrese su cuenta...)
 // --------------------------------------------------------------------------------------------
-// Actualizar los datos de usuario (update login)
+// Actualizar los datos de cuenta/usuario (update login)
 #[put("/login/{id}")]
 pub async fn update_usuario_login(id: web::Path<i32>, user: web::Json<NuevoAccount>) -> impl Responder {
   let user_id = id.into_inner();

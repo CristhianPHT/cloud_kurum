@@ -27,12 +27,7 @@ pub fn generate_jwt(
     encode(&Header::default(), &my_claims, &encoding_key)
 }
 
-pub fn insert_auth_token(
-    conn: &mut PgConnection,
-    user_id_input: i32,
-    token_input: &str,
-    expira_input: DateTime<Utc>,
-) -> QueryResult<String> {
+pub fn insert_auth_token( conn: &mut PgConnection, user_id_input: i32, token_input: &str, expira_input: DateTime<Utc>)-> QueryResult<String> {
     let auth_token = NuevoAuthToken {
         user_id: user_id_input,
         token: token_input.to_string(),
@@ -40,13 +35,12 @@ pub fn insert_auth_token(
         expira: expira_input.naive_utc(),
         activo: true,
     };
-
-    let inserted_id = insert_into(auth_tokens)
-        .values(auth_token)
-        .returning(token)
-        .get_result(conn);
-    inserted_id
+    insert_into(auth_tokens)
+    .values(auth_token)
+    .returning(token)
+    .get_result(conn)
 }
+
 
 pub fn select_id_token(conn: &mut PgConnection, token_input: String) -> QueryResult<i32> {
     // Buscar el ID del usuario a través del token jwt
