@@ -1,14 +1,18 @@
 // Módulos públicos para usarlo con name de package
 pub mod models;
+pub mod infrastructure;
 pub mod modules;
 pub mod schema;
 pub mod web {
     pub mod basic;
     pub mod interface;
+    pub mod auth;
+    pub mod handlers;
 }
 
 // Re-exportar las funciones más utilizadas para mantener compatibilidad
-pub use modules::database::establish_connection;
+// pub use modules::database::establish_connection;
+pub use infrastructure::db::establish_connection;
 
 // Re-exportar funciones por categoría
 pub mod usuarios {
@@ -35,17 +39,13 @@ pub mod relaciones {
     pub use crate::modules::relaciones::*;
 }
 
-pub mod database {
-    pub use crate::modules::database::*;
-}
-
 // Re-exportar funciones principales para mantener compatibilidad con código existente
 pub use modules::account::{
     insert_usuario, login_usuario_hashed, login_usuario_hashed_old, select_id_usuario,
     update_login, username_existe,
 };
 pub use modules::auth::{calculate_expiration, generate_jwt, insert_auth_token, select_id_token};
-pub use modules::database::{generic_insert, select_by_id};
+// pub use modules::database::{generic_insert, select_by_id};
 pub use modules::generos::{insert_gen_new, select_gen_all, select_gen_unico};
 pub use modules::libros::{insert_libro_nuevo, select_libro_main, select_nombre_libros};
 pub use modules::relaciones::{buscar_libros_por_genero, insert_libro_genero, OrdenamientoLibro};

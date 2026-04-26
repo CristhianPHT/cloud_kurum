@@ -4,7 +4,18 @@ CREATE TABLE usuariosss (
   apellido VARCHAR (60)
 );
 
-abx
+-- Tabla para Usuario, fue eliminaod
+CREATE TABLE usuario (
+  id SERIAL PRIMARY KEY,
+  nickname VARCHAR (60) NOT NULL,
+  perfil TEXT,
+  username VARCHAR (60) NOT NULL, -- unique, aquí falta este dato para la creación de la página web para el frontend publico
+  password_hash VARCHAR (60) NOT NULL,
+  email VARCHAR (60) NOT NULL,
+  actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  activo BOOLEAN NOT NULL DEFAULT true,
+  creado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);  
 
 CREATE TABLE token_recuperacion (
   id SERIAL PRIMARY KEY,

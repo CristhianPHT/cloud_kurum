@@ -17,6 +17,13 @@ pub fn insert_usuario(conn: &mut PgConnection, mut nuevo: NuevoAccount) -> Query
   inserted_id
 }
 
+pub fn select_usuario_por_username( conn: &mut PgConnection, user_name: &str ) -> QueryResult<Account> {
+  usuario
+    .filter(username.eq(user_name))
+    .select(Account::as_select())
+    .first::<Account>(conn)
+}
+
 pub fn select_id_usuario(conn: &mut PgConnection, usuario_id: i32) -> QueryResult<Account> {
   let cuentas = diesel::query_dsl::methods::FindDsl::find(usuario, usuario_id)
     .select(Account::as_select())

@@ -92,53 +92,23 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
 
 // --------------------------------------------------------------------------------------------
 use crate::models::{NuevoAccount, LoginAccount};// Account eliminado por no usarlo (warning)
-use crate::{insert_usuario, select_id_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token, select_id_token};
-use actix_web::HttpRequest;
+use crate::{insert_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token};
+// use actix_web::HttpRequest;
 // --------------------------------------------------------------------------------------------
 //  select_id_token   Se encarga de las acciones con la autenticación obtenida
-#[post("/usuario")]   // dashboard (acciones con token jwt...), sesiones
-pub async fn show_login(req: HttpRequest) -> impl Responder {
-    // Leer el token del encabezado Authorization
-  let token_input = match req.headers().get("Authorization") {
-    Some(header_value) => {
-      let token_str = match header_value.to_str() {
-        Ok(s) => s.trim(),
-        Err(_) => return HttpResponse::BadRequest().json(json!({ "error": "Encabezado Authorization inválido" })),
-      };
-      if !token_str.starts_with("Bearer ") {
-        return HttpResponse::BadRequest().json(json!({ "error": "Formato de token inválido, se esperaba 'Bearer '" }));
-      }
-      let token = token_str.strip_prefix("Bearer ").expect("El prefijo 'Bearer ' ya fue verificado");
-      if token.is_empty() {
-        return HttpResponse::Unauthorized().json(json!({ "error": "Token no proporcionado" }));
-      }
-      token.to_string()
-    }
-    None => return HttpResponse::Unauthorized().json(json!({ "error": "Token no proporcionado" })),
-  };
-  let mut conn = establish_connection();      // mejorar haciendo una respuesta https::internal error data base o algo así
-  let id_usuario_find = match select_id_token(&mut conn, token_input) { // busca el id del usuario a traves del token jwt en la base de datos con esa función
-    Ok(id) => id,
-    Err(_) => return HttpResponse::Unauthorized().json(json!({ "error": "Token inválido o expirado" })),
-  };
-  let usuario_encontrado =  match select_id_usuario(&mut conn, id_usuario_find){  // select * from usuario where id = id; es lo que hace mi función select_id
-    Ok(encontrado) => HttpResponse::Ok().json(json!({"usuario": encontrado})),
-    Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "No se pudo obtener los datos del usuario." })),
-  };
-  usuario_encontrado
-}
+
 // --------------------------------------------------------------------------------------------
 // insert_auth_token con username y password para obtener el authtoken
 #[post("/login")]
-pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {
+pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {  // Iniciar sesión "/login" (post)
   let mut conn = establish_connection();
   let usuario_login = user.into_inner();
-  if usuario_login.username.is_empty() || usuario_login.password_hash.is_empty() {
+  if usuario_login.username.is_empty() || usuario_login.password.is_empty() {
     return HttpResponse::BadRequest().json(json!({
-        "error": "Username y contraseña son obligatorios"
+        "error": "Usernamee y contraseña son obligatorios"
     }));
   }
-  let identidad = login_usuario_hashed(&mut conn, usuario_login.username.as_str(), usuario_login.password_hash.as_str());
+  let identidad = login_usuario_hashed(&mut conn, usuario_login.username.as_str(), usuario_login.password.as_str());
   match identidad {
     Ok(identidad) => {
       let expira = calculate_expiration();
