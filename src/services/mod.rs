@@ -1,4 +1,7 @@
-pub mod image_service;
+pub mod service;
+pub mod account;
+pub mod auth;
 
 // Re-export services for easy access
-pub use image_service::*;
+pub use account::*;
+pub use auth::*;

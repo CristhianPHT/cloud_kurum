@@ -1,19 +1,11 @@
 use crate::models::{NuevoUsuario, Usuario, UsuarioUpdate};
 use crate::schema::usuariosss::dsl::{apellido, id, nombre, usuariosss};
-use diesel::dsl::update;
+use diesel::dsl::{insert_into, update};
 use diesel::prelude::*;
 use diesel::query_dsl::methods::{LimitDsl, OffsetDsl};
-
-// -------------------------------------------------------------
-// Programa testing, usuariosss, basico para probar la conexion a la base de datos siguiendo la estructura ORM de Diesel.
-// -------------------------------------------------------------
-
-pub fn select_id(
-    conn: &mut PgConnection,
-    usuario_id: i32,
-) -> Result<Usuario, diesel::result::Error> {
+// todo lo que esta aca es para la tabla usuariosss de testing
+pub fn select_id(conn: &mut PgConnection, usuario_id: i32) -> Result<Usuario, diesel::result::Error> {
     use crate::schema::usuariosss::dsl::*;
-
     usuariosss.filter(id.eq(usuario_id)).first::<Usuario>(conn)
 }
 
@@ -27,11 +19,7 @@ pub fn select_all_users(conn: &mut PgConnection, page: i64) -> Vec<Usuario> {
     .expect("No cargó Usuarios: Error")
 }
 
-pub fn update_user_id(
-    conn: &mut PgConnection,
-    usuario_id: i32,
-    usuario_local: UsuarioUpdate,
-) -> QueryResult<usize> {
+pub fn update_user_id(conn: &mut PgConnection, usuario_id: i32, usuario_local: UsuarioUpdate) -> QueryResult<usize> {
     let query = update(usuariosss.filter(id.eq(usuario_id)));
 
     match (&usuario_local.nombre, &usuario_local.apellido) {
@@ -42,9 +30,7 @@ pub fn update_user_id(
             ))
             .execute(conn),
         (Some(nuevo_nombre), None) => query.set(nombre.eq(nuevo_nombre.clone())).execute(conn),
-        (None, Some(nuevo_apellido)) => {
-            query.set(apellido.eq(nuevo_apellido.clone())).execute(conn)
-        }
+        (None, Some(nuevo_apellido)) => query.set(apellido.eq(nuevo_apellido.clone())).execute(conn),
         (None, None) => {
             println!("No se puede actualizar: ningún campo para modificar");
             Ok(0)
@@ -53,12 +39,9 @@ pub fn update_user_id(
 }
 
 pub fn insert_user(connec: &mut PgConnection, nuevo: NuevoUsuario) -> QueryResult<i32> {
-    use diesel::dsl::insert_into;
-
-    let inserted_id = insert_into(usuariosss)
+    insert_into(usuariosss)
         .values(nuevo)
         .returning(id)
-        .get_result(connec);
-
-    inserted_id
+        .get_result(connec)
 }
+

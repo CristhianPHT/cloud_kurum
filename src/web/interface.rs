@@ -1,6 +1,10 @@
 use crate::establish_connection;
+use crate::services::register_user;
 // use actix_web::http::Error; // ahora no necesario?
 use actix_web::{get,post, put,web, HttpResponse, Responder};
+// use crate::models::image::R2Config;
+// use crate::utils::r2_client::R2Client;
+// use std::time::Duration as StdDuration;
 // #[warn(unused_imports)]
 // use jsonwebtoken::errors::Error;
 // #[warn(unused_imports)]
@@ -15,6 +19,49 @@ pub async fn health_check() -> impl Responder {
         Err(_) => HttpResponse::InternalServerError().body("Error al conectar con la base de datos"),
     }
 }
+
+// #[get("/image/r2/{key:.*}")]
+// pub async fn view_r2_image(key: web::Path<String>) -> impl Responder {
+//     let r2_config = R2Config {
+//         access_key_id: std::env::var("R2_ACCESS_KEY_ID").unwrap_or_default(),
+//         secret_access_key: std::env::var("R2_SECRET_ACCESS_KEY").unwrap_or_default(),
+//         endpoint: std::env::var("R2_ENDPOINT").unwrap_or_default(),
+//         bucket_name: std::env::var("R2_BUCKET_NAME").unwrap_or_default(),
+//     };
+
+//     if r2_config.access_key_id.is_empty()
+//         || r2_config.secret_access_key.is_empty()
+//         || r2_config.endpoint.is_empty()
+//         || r2_config.bucket_name.is_empty()
+//     {
+//         return HttpResponse::InternalServerError().json(json!({
+//             "error": "Faltan variables de entorno de R2"
+//         }));
+//     }
+
+//     let r2_client = match R2Client::new(r2_config) {
+//         Ok(client) => client,
+//         Err(e) => {
+//             return HttpResponse::InternalServerError().json(json!({
+//                 "error": format!("Error al inicializar R2: {}", e)
+//             }))
+//         }
+//     };
+
+//     let image_key = key.into_inner();
+
+//     match r2_client
+//         .generate_access_url(&image_key, StdDuration::from_secs(3600))
+//         .await
+//     {
+//         Ok(url) => HttpResponse::Found()
+//             .append_header(("Location", url))
+//             .finish(),
+//         Err(e) => HttpResponse::InternalServerError().json(json!({
+//             "error": format!("No se pudo generar URL de imagen: {}", e)
+//         })),
+//     }
+// }
 use crate::models::{NuevoGenero, NuevoLibroGenero, NuevoUsuario, Usuario, UsuarioUpdate}; // Libro, NuevoLibro Eliminados por no usarlos (warning)
 use crate::{select_all_users, select_id, insert_user, update_user_id}; // , update_user_id
 use serde_json::json;
@@ -90,9 +137,10 @@ pub async fn update_user(id: web::Path<i32>, user: web::Json<UsuarioUpdate>) -> 
   }
 }
 
-// --------------------------------------------------------------------------------------------
+
+// ---------------------------------------------- ACCOUNT ----------------------------------------------
 use crate::models::{NuevoAccount, LoginAccount};// Account eliminado por no usarlo (warning)
-use crate::{insert_usuario, update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token};
+use crate::{update_login, login_usuario_hashed, calculate_expiration, generate_jwt, insert_auth_token};
 // use actix_web::HttpRequest;
 // --------------------------------------------------------------------------------------------
 //  select_id_token   Se encarga de las acciones con la autenticación obtenida
@@ -133,8 +181,9 @@ pub async fn login_usuario(user: web::Json<LoginAccount>) -> impl Responder {  /
 // ingresar usuario sin token (insert usuario), retorna los mismos datos (no debería?)
 // use crate::username_existe;
 use diesel::result::{Error, DatabaseErrorKind}; // Error: UniqueViolation, base de datos UNIQUE Violation
+use crate::web::dto::account::RegisterAccount;
 #[post("/register")]
-pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder { 
+pub async fn insert_login(user: web::Json<RegisterAccount>) -> impl Responder { 
   let mut conn = establish_connection();
   let usuario_all = user.into_inner();  // Faltaría la validación de los datos recibidos (vacios o nulos...)
   if usuario_all.username.trim().is_empty() {
@@ -142,17 +191,17 @@ pub async fn insert_login(user: web::Json<NuevoAccount>) -> impl Responder {
         "error": "username vacío"
     }));
   }
-  if usuario_all.password_hash.trim().is_empty() {
+  if usuario_all.password.trim().is_empty() {
       return HttpResponse::BadRequest().json(json!({
           "error": "password vacío"
       }));
   }
-  if usuario_all.password_hash.len() > 128 {
+  if usuario_all.password.len() > 128 {
     return HttpResponse::BadRequest().json(json!({
         "error": "contraseña demasiado larga (máximo 64 caracteres)"
     }));
   }
-  let identificacion = match insert_usuario(&mut conn, usuario_all) {
+  let identificacion = match register_user(&mut conn, usuario_all) {
     Ok(id) => id,
     Err(Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _)) => {
         return HttpResponse::Conflict().json(json!({
@@ -254,7 +303,7 @@ pub async fn auth_user(user: web::Json<NuevoAuthToken>) -> impl Responder {
 // -----------------------------------------libros----------------------------------------------
 use crate::models::NuevoLibro;  // Libro, LibroDashboard por ahora no usados directamente
 use crate::{select_nombre_libros, insert_libro_nuevo, select_libro_main};
-#[get("/dashboard")]
+#[get("/libros")]
 pub async fn get_libro_all() -> impl Responder {
   let mut conn = establish_connection();
   // let user_id = id.into_inner();

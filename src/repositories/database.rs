@@ -1,20 +1,11 @@
+use diesel::insertable::CanInsertInSingleQuery;
 use diesel::pg::Pg;
 use diesel::prelude::*;
-use diesel::query_dsl::methods::{FindDsl, LimitDsl};
+use diesel::query_builder::{InsertStatement, QueryFragment, QueryId};
+use diesel::query_dsl::methods::{ExecuteDsl, FindDsl, LimitDsl};
 use diesel::query_dsl::{LoadQuery, RunQueryDsl};
 use diesel::Table;
-use dotenv::dotenv;
-use std::env;
 
-// Establece la conexión a la base de datos
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("Se debe configurar DATABASE_URL");
-    PgConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
-}
-
-// Función genérica para seleccionar por ID
 pub fn select_by_id<T, U>(
     table: T,
     conn: &mut PgConnection,
@@ -29,11 +20,6 @@ where
 {
     table.find(id_clave).first(conn)
 }
-
-// Función genérica para insertar
-use diesel::insertable::CanInsertInSingleQuery;
-use diesel::query_builder::{InsertStatement, QueryFragment, QueryId};
-use diesel::query_dsl::methods::ExecuteDsl;
 
 pub fn generic_insert<T, U>(
     table: T,

@@ -57,3 +57,12 @@ Eliminar las tablas creadas en nuestra migración:
 ```bash
 diesel migration redo
 ```
+--------------
+2026-06-04_usuario       ✅
+2026-06-05_libro         ✅
+2026-06-05_capitulo      ✅
+2026-06-06_genero        ← siguiente
+2026-06-06_etiqueta
+2026-06-07_progreso
+2026-06-07_comentario
+2026-06-07_valoracion

@@ -3,7 +3,7 @@ use crate::models::image::{
     ImageUploadRequest, ImageUploadResponse, NewImageMetadata, R2Config,
 };
 use crate::utils::r2_client::R2Client;
-use chrono::{Duration, NaiveDateTime, Utc};
+use chrono::{Duration, Utc};
 use diesel::prelude::*;
 use diesel::PgConnection;
 use std::time::Duration as StdDuration;
@@ -48,7 +48,7 @@ impl ImageService {
             image_id: image_id.clone(),
             owner_id: user_id,
             file_name: request.file_name,
-            file_size: request.file_size,
+            file_size: request.file_size as i64,
             content_type: request.content_type,
             category: format!("{:?}", request.category),
             r2_key: r2_key.clone(),
@@ -124,7 +124,7 @@ impl ImageService {
             image_id: image_id.clone(),
             owner_id: user_id,
             file_name,
-            file_size: file_data.len() as u64,
+            file_size: file_data.len() as i64,
             content_type,
             category: format!("{:?}", category),
             r2_key,
@@ -166,7 +166,7 @@ impl ImageService {
         &self,
         conn: &mut PgConnection,
         user_id: i32,
-        category: Option<ImageCategory>,
+        category_filter: Option<ImageCategory>,
         page: i64,
         per_page: i64,
     ) -> Result<Vec<ImageMetadata>, ImageError> {
@@ -174,7 +174,7 @@ impl ImageService {
 
         let mut query = images.filter(owner_id.eq(user_id)).into_boxed();
 
-        if let Some(cat) = category {
+        if let Some(cat) = category_filter {
             query = query.filter(category.eq(format!("{:?}", cat)));
         }
 
@@ -192,30 +192,29 @@ impl ImageService {
         &self,
         conn: &mut PgConnection,
         user_id: i32,
-        image_id: &str,
+        image_id_input: &str,
         new_name: Option<String>,
-        is_public: Option<bool>,
+        is_public_input: Option<bool>,
     ) -> Result<(), ImageError> {
         use crate::schema::images::dsl::*;
 
-        let metadata = self.get_image_metadata(conn, image_id)?;
+        let metadata = self.get_image_metadata(conn, image_id_input)?;
 
         if metadata.owner_id != user_id {
             return Err(ImageError::Unauthorized);
         }
 
-        let mut changeset = diesel::update(images.filter(image_id.eq(image_id)));
+        let mut changeset = diesel::update(images.filter(image_id.eq(image_id_input)));
 
-        if let Some(name) = new_name {
-            changeset = changeset.set(file_name.eq(name));
-        }
-
-        if let Some(public) = is_public {
-            changeset = changeset.set(is_public.eq(public));
-        }
+        let final_name = new_name.unwrap_or_else(|| metadata.file_name.clone());
+        let final_public = is_public_input.unwrap_or(metadata.is_public);
 
         changeset
-            .set(updated_at.eq(Utc::now().naive_utc()))
+            .set((
+                file_name.eq(final_name),
+                is_public.eq(final_public),
+                updated_at.eq(Utc::now().naive_utc()),
+            ))
             .execute(conn)
             .map_err(|e| ImageError::DatabaseError(e.to_string()))?;
 

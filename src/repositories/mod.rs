@@ -1,16 +1,17 @@
 pub mod account;
 pub mod auth;
-// pub mod database;
+pub mod database;
 pub mod generos;
 pub mod libros;
 pub mod relaciones;
+pub mod repository;
 pub mod usuarios;
+pub mod libro_usuario;
 
-// Re-exports for convenience
 pub use account::*;
 pub use auth::*;
-// pub use database::{establish_connection, generic_insert, select_by_id};
+pub use database::*;
 pub use generos::*;
 pub use libros::*;
 pub use relaciones::*;
-pub use usuarios::*;
+pub use repository::*;  // aquí repository podría ser eliminado y se usaria el mod.rs de la carpeta repositories

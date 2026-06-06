@@ -221,3 +221,33 @@ Diagrama de casos de uso:...
 Sección “Estado Actual” 
 
 Sección “Versión Ideal / Meta”
+
+CREATE TABLE oauth_accounts (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  usuario_id INT,
+  provider VARCHAR(50),              -- 'google', 'github', etc.
+  provider_id VARCHAR(255) UNIQUE,   -- ID único de Google
+  email VARCHAR,
+  FOREIGN KEY (usuario_id) REFERENCES usuario(id)
+)
+Agregar esta tabla en sql y orm, para google auth y más
+
+------------------------------
+# Usar Diesel
+
+## .filter()
+Hace un filtrado de elementos, pero puedes hacer LIMIT x (dónde 'x' sería 1 o varios elementos)
+## .get_result()
+Espera un único resultado
+## .load()
+Devuelve un Vec(T) con todos los resultados
+--------------------------
+Usuario
+├─ Biblioteca personal
+│  ├─ EPUB
+│  ├─ PDF
+│  └─ Notas
+│
+Libro
+├─ Capítulos
+└─ Metadata = usuario datos...?

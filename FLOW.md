@@ -159,6 +159,94 @@ Responde con un objeto JSON que contiene:
 
 
 
+------------------------------____
+2. 🔍 Motor de recomendación simple (sin IA)
 
+Ejemplo:
 
+“si viste esto → te recomiendo esto”
+
+Usando:
+
+grafos de relaciones
+pesos entre nodos
+
+👉 Esto es lo que usan muchas plataformas (simplificado)
+
+3. 🗺️ Sistema de rutas o dependencias
+
+Ejemplo:
+
+roadmap de aprendizaje
+dependencias entre temas
+
+Puedes:
+
+calcular rutas óptimas
+detectar bloqueos
+
+👉 Aquí metes:
+
+Dijkstra
+grafos dirigidos
+------------------------------------------------------------------
+1. 📚 Biblioteca + recomendación (grafos)
+
+✔ Muy buena
+✔ Reutilizas algo que ya tienes
+✔ Enfocado y útil
+👉 Este deberías hacerlo primero
+
+Versión mínima:
+
+Nodo = libro
+Arista = relación (mismo autor, género, etiqueta)
+Función:
+“recomendar libros similares”
+2. 🗺️ Rutas con Bevy (tipo logística/juego)
+
+✔ Interesante
+❗ Mucho más complejo
+❗ Te puedes perder fácil
+
+👉 Esto es nivel proyecto 3 o 4, no ahora
+
+🎯 Decisión clara
+
+Empieza con:
+
+biblioteca + recomendación con grafos
+
+Después:
+
+haces rutas (más complejo, más potente) 
+----------------------
+src/
+
+bin/
+backend.rs
+infrastructure/
+db.rs
+models/
+account.rs
+auth_token.rs
+libro.rs
+repositories/
+account_repository.rs
+auth_repository.rs
+libro_repository.rs
+services/
+account_service.rs
+auth_service.rs
+libro_service.rs
+web/
+handlers/
+user_handler.rs
+auth_handler.rs
+dto/
+user_dto.rs
+auth_dto.rs
+auth/ (tu middleware/token parsing)
+utils/
+config/
 

@@ -4,7 +4,7 @@ diesel::table! {
     auth_tokens (id) {
         id -> Int4,
         user_id -> Int4,
-        token -> Varchar,
+        token -> Text,
         dispositivo -> Nullable<Varchar>,
         expira -> Timestamp,
         activo -> Bool,
@@ -75,6 +75,8 @@ diesel::table! {
         publicacion -> Date,
         #[max_length = 100]
         estado -> Nullable<Varchar>,
+        visibilidad -> Nullable<Bool>,
+        creado_por -> Int4,
     }
 }
 
@@ -83,6 +85,17 @@ diesel::table! {
         id -> Int4,
         libro_id -> Int4,
         genero_id -> Int4,
+    }
+}
+
+diesel::table! {
+    libro_usuario (id) {
+        id -> Int4,
+        fk_usuario -> Nullable<Int4>,
+        fk_libro -> Nullable<Int4>,
+        #[max_length = 50]
+        estado -> Nullable<Varchar>,
+        creado -> Timestamp,
     }
 }
 
@@ -183,24 +196,17 @@ diesel::table! {
 diesel::table! {
     usuario (id) {
         id -> Int4,
-        nickname -> Nullable<Varchar>,
+        #[max_length = 60]
+        nickname -> Varchar,
         perfil -> Nullable<Text>,
+        #[max_length = 60]
         username -> Varchar,
-        password_hash -> Varchar,
+        password_hash -> Text,
+        #[max_length = 60]
         email -> Varchar,
         actualizacion -> Timestamp,
         activo -> Bool,
         creado -> Timestamp,
-    }
-}
-
-diesel::table! {
-    usuariosss (id) {
-        id -> Int4,
-        #[max_length = 60]
-        nombre -> Varchar,
-        #[max_length = 60]
-        apellido -> Nullable<Varchar>,
     }
 }
 
@@ -210,8 +216,11 @@ diesel::joinable!(capitulos -> libro (fk_libro));
 diesel::joinable!(etiqueta -> usuario (fk_usuario));
 diesel::joinable!(etiqueta_list -> etiqueta (fk_etiqueta));
 diesel::joinable!(etiqueta_list -> libro (fk_libro));
+diesel::joinable!(libro -> usuario (creado_por));
 diesel::joinable!(libro_genero -> genero (genero_id));
 diesel::joinable!(libro_genero -> libro (libro_id));
+diesel::joinable!(libro_usuario -> libro (fk_libro));
+diesel::joinable!(libro_usuario -> usuario (fk_usuario));
 diesel::joinable!(marcapaginas -> capitulos (fk_capitulo));
 diesel::joinable!(marcapaginas -> usuario (fk_usuario));
 diesel::joinable!(miembros -> scan (fk_scan));
@@ -235,6 +244,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     genero,
     libro,
     libro_genero,
+    libro_usuario,
     marcapaginas,
     miembros,
     multidispositivos,
@@ -245,5 +255,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     sessions,
     token_recuperacion,
     usuario,
-    usuariosss,
 );

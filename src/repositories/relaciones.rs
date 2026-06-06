@@ -3,11 +3,7 @@ use crate::schema::libro_genero::dsl::{id as libro_genero_id, libro_genero};
 use diesel::dsl::insert_into;
 use diesel::prelude::*;
 
-// INSERT - Relacionar libro con género
-pub fn insert_libro_genero(
-    conn: &mut PgConnection,
-    lib_gen_data: NuevoLibroGenero,
-) -> QueryResult<i32> {
+pub fn insert_libro_genero(conn: &mut PgConnection, lib_gen_data: NuevoLibroGenero) -> QueryResult<i32> {
     insert_into(libro_genero)
         .values(&lib_gen_data)
         .returning(libro_genero_id)
@@ -29,7 +25,6 @@ pub fn buscar_libros_por_genero(
     orden: OrdenamientoLibro,
 ) -> QueryResult<Vec<Libro>> {
     use crate::schema::{libro, libro_genero};
-    use diesel::prelude::*;
 
     let resultados_por_pagina = 10;
     let offset = (pagina - 1) * resultados_por_pagina;

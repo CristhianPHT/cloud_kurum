@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use diesel::{Queryable,Insertable, Selectable, AsChangeset};
+use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 #[allow(unused_imports)]
 use crate::schema::{usuariosss, usuario, token_recuperacion, auth_tokens, multidispositivos, sessions};   // Login (usuario)
 
@@ -37,13 +37,28 @@ pub struct LoginAccount {   // Logearse legalmente como usuario (post)
     pub username: String,
     pub password: String,
 }
-#[derive(Queryable, Serialize, Selectable, Debug)]      // para mostrar (dashboard)
+
+#[derive(Queryable, Identifiable, Selectable)]
 #[diesel(table_name = usuario)]
-pub struct Account {    // Obtener datos (get) (Pagina principal del usuario para ver sus datos... dashboard)
-    pub nickname: Option<String>,   // apodo
-    pub perfil: Option<String>,     // imagen (portada/icon/foto de perfil)
-    pub username: String,    // gmail, o con lo que ingresará por arriba ---> LoginAccount ...
+pub struct NiceAccount {    // Temporalmente con todos los atributos de usuario|account que será usado para lectura usando el id 
+    pub id: i32,
+    pub nickname: Option<String>,
+    pub perfil: Option<String>,
+    pub username: String,
+    pub password_hash: String,
+    pub email: String,
+    pub actualizacion: NaiveDateTime,
+    pub activo: bool,
+    pub creado: NaiveDateTime
 }
+
+#[derive(Queryable, Serialize)]
+#[diesel(table_name = usuario )]
+pub struct HeaderAccount {
+    pub nickname: Option<String>,
+    pub perfil: Option<String>
+}
+
 #[derive(Insertable, Deserialize, Serialize, Clone, AsChangeset)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = usuario)]
 pub struct NuevoAccount {  // Struct para insertar datos en la base de datos (INSERT, UPDATE) (post, put) (Para nuevos usuario y para configuración o edit de perfil)
@@ -53,6 +68,8 @@ pub struct NuevoAccount {  // Struct para insertar datos en la base de datos (IN
     pub password_hash: String,      // Contraseña o con lo que ingresará por abajo ---> LoginAccount ...
     pub email: String,      // gmail, para recuperacion de la cuenta
     pub actualizacion: NaiveDateTime,   // Última actualización hecho sobre la cuenta
+    pub activo: bool,
+    pub creado: NaiveDateTime
 }
 // *-*-*-*-*-*-*-*-* Finalización para el manejo de la Cuenta *-*-*-*-*-*-*-*-*
 // ------------------- Clave para poder recuperar cuenta -------------------
@@ -135,7 +152,7 @@ use crate::schema::libro;   // Biblioteca all
 
 #[derive(Queryable, Serialize)]
 #[diesel(table_name = libro)]
-pub struct LibroDashboard {
+pub struct LibroDashboard { // Dashboard de libros, para mostrar en la pagina principal
     pub id: i32,
     pub titulo: Option<String>,
     pub perfil: Option<String>,
@@ -152,13 +169,15 @@ pub struct Libro {     // Esta Structura como get (json) o select * from libro (
     pub capitulos: Option<String>,
     pub publicacion: chrono::NaiveDate,
     pub estado: Option<String>,
+    pub visibilidad: Option<bool>,
+    pub creado_por: i32,
 }
 
 use chrono::NaiveDate;
 
-#[derive(Insertable, Deserialize, Serialize, Clone)]  
+#[derive(Insertable, Deserialize, Serialize, Clone)]    // Insertable = Jamás usar id
 #[diesel(table_name = libro)]
-pub struct NuevoLibro {     // Struct para insert sobre la base de datos sobre un libro
+pub struct NuevoLibro {     // Struct para insertar datos en la base de datos (INSERT)
     pub titulo: String,
     pub perfil: Option<String>,
     pub sinopsis: Option<String>,
@@ -166,7 +185,87 @@ pub struct NuevoLibro {     // Struct para insert sobre la base de datos sobre u
     pub capitulos: Option<String>,
     pub publicacion: NaiveDate,     // NaiveDate por que en la base de datos es type Date (solo fecha)
     pub estado: String,
+    pub visibilidad: bool,
+    pub creado_por: i32,
 }
+
+// --------------------------------------- Libro x Usuario -------------------------------------------
+// #[derive(Queryable, Serialize)]
+// #[diesel(table_name = libro_usuario)]
+// pub struct LibroUsuario {     // Esta Structura como get (json) o select * from libro (postgres)
+//     pub id: i32, // -> Int4
+//     pub fk_usuario: i32, // -> Nullable<Int4>
+//     pub fk_libro: i32, // -> Nullable<Int4>
+//     pub estado: Option<String>, // -> Nullable<Varchar> maxlength 50
+//     // estado ejemplos: Pendiente, completado, visto..., etc
+//     pub creado: NaiveDateTime, // -> Timestamp
+// }
+
+use crate::schema::libro_usuario;   // siempre llamar crate::schema para "Insertable"
+#[derive(Insertable, Deserialize, Serialize)]   // Clone
+#[diesel(table_name = libro_usuario)]
+pub struct NuevoLibroUsuario { // tabla relacional
+    pub fk_usuario: i32,
+    pub fk_libro: i32,
+    pub estado: Option<String>,
+    pub creado: NaiveDateTime
+}
+
+// #[derive(Queryable, Selectable, Serialize, Debug)]
+// #[diesel(check_for_backend(diesel::pg::Pg))]
+// pub struct AllLibroxUsuario {
+//     #[diesel(select_expression = libro_usuario::id)]
+//     pub relacion_id: i32,
+
+//     #[diesel(select_expression = libro_usuario::fk_usuario)]
+//     pub usuario_id: Option<i32>,
+
+//     #[diesel(select_expression = libro_usuario::fk_libro)]
+//     pub libro_id: Option<i32>,
+
+//     #[diesel(select_expression = libro::titulo)]
+//     pub titulo: String,
+
+//     #[diesel(select_expression = libro::perfil)]
+//     pub perfil: Option<String>,
+
+//     #[diesel(select_expression = libro::sinopsis)]
+//     pub sinopsis: Option<String>,
+
+//     #[diesel(select_expression = libro::tipo)]
+//     pub tipo: Option<String>,
+
+//     #[diesel(select_expression = libro::visibilidad)]
+//     pub visibilidad: Option<bool>,
+// }
+use diesel::Associations;
+#[derive(Queryable, Identifiable, Associations)] // ,Selectable, Queryable, Associations, Debug, 
+#[diesel(belongs_to(Libro, foreign_key = fk_libro))]
+#[diesel(belongs_to(NiceAccount, foreign_key = fk_usuario))]
+#[diesel(table_name = libro_usuario)]
+pub struct RelationLibroUsuario{
+    pub id: i32, // -> Int4
+    pub fk_usuario: i32, // -> Nullable<Int4>
+    pub fk_libro: i32, // -> Nullable<Int4>
+    pub estado: Option<String>, // -> Nullable<Varchar> maxlength 50
+    pub creado: NaiveDateTime, // -> Timestamp
+}
+
+
+
+#[derive(Queryable, Serialize, Debug)]
+#[diesel(table_name = libro_usuario)]
+pub struct AllLibroxUsuario {
+    pub relacion_id: i32,           // id en libro_usuario
+    pub usuario_id: Option<i32>,    // fk_usuario   
+    pub libro_id: Option<i32>,      // fk_libro
+    pub titulo: Option<String>, // tabla=libro
+    pub perfil: Option<String>, // tabla=libro
+    pub sinopsis: Option<String>, // tabla=libro
+    pub tipo: Option<String>, // tabla=libro
+    pub visibilidad: Option<bool>, // tabla=libro
+}
+
 // -------------------------------------------- Género ------------------------------------------------
 use crate::schema::{genero, capitulos};
 #[derive(Queryable, Serialize)]
@@ -191,7 +290,7 @@ pub struct NuevoLibroGenero {
     pub libro_id: i32,
     pub genero_id: i32,
 }
-use diesel::Associations;
+
 use diesel::Identifiable;
 #[derive(Queryable, Identifiable, Associations)]
 #[diesel(belongs_to(Libro))]
@@ -215,4 +314,140 @@ pub struct Capitulos{
     pub imagen: String,
     pub fk_libro: i32,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// todo --- > abajo para el manejo de imágenes R2
+// pub mod image {
+//     use chrono::NaiveDateTime;
+//     use diesel::{Insertable, Queryable, Selectable};
+//     use serde::{Deserialize, Serialize};
+//     use std::fmt;
+
+//     use crate::schema::images;
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct R2Config {
+//         pub access_key_id: String,
+//         pub secret_access_key: String,
+//         pub endpoint: String,
+//         pub bucket_name: String,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub enum ImageCategory {
+//         ProfilePicture,
+//         BookCover,
+//         ChapterImage,
+//         ScanLogo,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub enum HttpMethod {
+//         Get,
+//         Put,
+//         Delete,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct R2PresignedUrlRequest {
+//         pub method: HttpMethod,
+//         pub key: String,
+//         pub expires_in_seconds: u64,
+//         pub content_type: Option<String>,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct ImageUploadRequest {
+//         pub file_name: String,
+//         pub file_size: u64,
+//         pub content_type: String,
+//         pub category: ImageCategory,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct ImageUploadResponse {
+//         pub upload_url: String,
+//         pub image_id: String,
+//         pub expires_at: NaiveDateTime,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct ImageAccessRequest {
+//         pub image_id: String,
+//     }
+
+//     #[derive(Debug, Clone, Serialize, Deserialize)]
+//     pub struct ImageAccessResponse {
+//         pub access_url: String,
+//         pub expires_at: NaiveDateTime,
+//     }
+
+//     #[derive(Queryable, Selectable, Debug, Clone, Serialize, Deserialize)]
+//     #[diesel(table_name = images)]
+//     pub struct ImageMetadata {
+//         pub image_id: String,
+//         pub owner_id: i32,
+//         pub file_name: String,
+//         pub file_size: i64,
+//         pub content_type: String,
+//         pub category: String,
+//         pub r2_key: String,
+//         pub is_public: bool,
+//         pub created_at: NaiveDateTime,
+//         pub updated_at: NaiveDateTime,
+//     }
+
+//     #[derive(Insertable, Debug, Clone, Serialize, Deserialize)]
+//     #[diesel(table_name = images)]
+//     pub struct NewImageMetadata {
+//         pub image_id: String,
+//         pub owner_id: i32,
+//         pub file_name: String,
+//         pub file_size: i64,
+//         pub content_type: String,
+//         pub category: String,
+//         pub r2_key: String,
+//         pub is_public: bool,
+//         pub created_at: NaiveDateTime,
+//         pub updated_at: NaiveDateTime,
+//     }
+
+//     #[derive(Debug)]
+//     pub enum ImageError {
+//         InvalidFormat,
+//         TooLarge,
+//         Unauthorized,
+//         NotFound,
+//         DatabaseError(String),
+//         R2Error(String),
+//     }
+
+//     impl fmt::Display for ImageError {
+//         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//             match self {
+//                 ImageError::InvalidFormat => write!(f, "Formato de imagen inválido"),
+//                 ImageError::TooLarge => write!(f, "Imagen demasiado grande"),
+//                 ImageError::Unauthorized => write!(f, "No autorizado"),
+//                 ImageError::NotFound => write!(f, "Imagen no encontrada"),
+//                 ImageError::DatabaseError(e) => write!(f, "Error de base de datos: {}", e),
+//                 ImageError::R2Error(e) => write!(f, "Error de R2: {}", e),
+//             }
+//         }
+//     }
+
+//     impl std::error::Error for ImageError {}
+// }
 

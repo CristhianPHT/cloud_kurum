@@ -2,7 +2,8 @@ use crate::models::image::{HttpMethod, ImageError, R2Config, R2PresignedUrlReque
 use aws_sdk_s3::operation::put_object::PutObjectOutput;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::primitives::ByteStream;
-use aws_sdk_s3::{Client, Config, Credentials, Region};
+use aws_sdk_s3::config::{Credentials, Region};
+use aws_sdk_s3::{Client, Config};
 use chrono::{DateTime, Utc};
 use std::time::Duration;
 

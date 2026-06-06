@@ -1,4 +1,1 @@
-pub mod image_handler;
-
-// Re-export handlers for easy access
-pub use image_handler::*;
+// Módulo de imágenes temporalmente desconectado del build principal.
