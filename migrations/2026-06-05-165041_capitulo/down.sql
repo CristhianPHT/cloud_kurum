@@ -1,1 +1,2 @@
--- This file should undo anything in `up.sql`
+DROP TABLE capitulo;
+DROP TABLE bloque_capitulo;

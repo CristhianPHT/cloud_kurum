@@ -1,1 +1,2 @@
--- This file should undo anything in `up.sql`
+DROP TABLE genero;
+DROP TABLE libro_genero;
