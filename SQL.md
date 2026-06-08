@@ -30,6 +30,11 @@ Dentro de la conección con una base de datos, poder ver las tablas de esa base 
 ```bash
 \dt          -- Ver tablas (si estás dentro de una base)
 ```
+### Crear un usuario por terminal:
+Dónde pondrá el usuario y contraseña de su elección.
+```bash
+CREATE USER mi_usuario WITH PASSWORD 'MiContraseñaSegura';
+```
 ### Crear la base de datos si no existe y asignando a un usuarioX:
 ```bash
 sudo -u postgres createdb -O usuarioXexistente nameXdataBase
