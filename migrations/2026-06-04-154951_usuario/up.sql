@@ -19,9 +19,9 @@ CREATE TABLE imagen_perfil (
   -- descripcion TEXT, -- podría ser útil o no.
   is_active BOOLEAN NOT NULL, -- true si la imagen está activa, false si está inactiva
   mime_type VARCHAR (255) NOT NULL, -- image/jpeg, image/png, image/webp, etc.
-  tamano_bytes BIGINT NOT NULL, -- tamaño en bytes de la imagen.
-  ancho INT NOT NULL, -- pixeles
-  alto INT NOT NULL, -- PIXELES
+  tamano_bytes BIGINT NOT NULL, -- tamaño en bytes de la imagen, ideal para estadistica
+  ancho INT, -- pixeles
+  alto INT, -- PIXELES
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES usuario(id) ON DELETE CASCADE
