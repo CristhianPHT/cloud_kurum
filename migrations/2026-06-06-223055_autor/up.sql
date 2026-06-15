@@ -1,6 +1,7 @@
 CREATE TABLE autor (
   id SERIAL PRIMARY KEY,
-  nombre VARCHAR(255) NOT NULL
+  nombre VARCHAR(255) NOT NULL,
+  apellido VARCHAR(255) NOT NULL
 );
 CREATE TABLE libro_autor (
   libro_id INT NOT NULL,

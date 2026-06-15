@@ -1,6 +1,0 @@
--- This file should undo anything in `up.sql`
--- DROP TABLE scan CASCADE;
--- DROP TABLE puntaje CASCADE;
--- DROP TABLE publicador CASCADE; -- Eliminar primero las tablas que dependen de capitulos
--- DROP TABLE miembros;
--- DROP TABLE marcapaginas CASCADE;

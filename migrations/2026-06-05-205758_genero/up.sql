@@ -1,6 +1,7 @@
 CREATE TABLE genero (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion VARCHAR
 );
 CREATE TABLE libro_genero (
   libro_id INT NOT NULL,
