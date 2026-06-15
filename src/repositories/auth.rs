@@ -10,7 +10,7 @@ pub fn insert_auth_token(conn: &mut PgConnection, user_id_input: i32, token_inpu
         token: token_input.to_string(),
         dispositivo: None,
         expira: expira_input.naive_utc(),
-        activo: true,
+        is_active: true,
     };
     insert_into(auth_tokens)
         .values(auth_token)

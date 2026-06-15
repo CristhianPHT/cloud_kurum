@@ -1,0 +1,5 @@
+-- This file should undo anything in `up.sql`
+-- DROP TABLE multidispositivos;
+-- DROP TABLE sessions;
+-- DROP TABLE IF EXISTS multidispositivos CASCADE;
+-- DROP TABLE IF EXISTS sessions CASCADE;

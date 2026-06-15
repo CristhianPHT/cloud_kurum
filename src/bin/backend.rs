@@ -2,7 +2,7 @@ use actix_web::{App, HttpServer};
 // use serde_json::json;
 use actix_cors::Cors;  // Importa Cors para habilitar CORS en la aplicación
 use dotenv::dotenv;
-use nube_kurum::web::interface::{health_check, show_users, show_user, create_user, update_user}; // falta agregar get_user_images y view_r2_image
+use nube_kurum::web::interface::health_check; // falta agregar get_user_images y view_r2_image
 use nube_kurum::web::interface::{insert_login, update_usuario_login, login_usuario};
 use nube_kurum::web::interface::{get_libro_all, post_nuevo_libro, get_libro_unique, post_nuevo_libro_genero};
 use nube_kurum::web::interface::{get_buscar_lib_gen,post_nuevo_genero}; //test
@@ -21,10 +21,6 @@ async fn main() -> std::io::Result<()> {
       .service(health_check)  // Agregar health_check, verificación de acceso a la base de datos
       //.service(get_user_images) // Obtener imágenes del usuario
       // .service(view_r2_image) // Ver imagen en R2 por GET
-      .service(show_users)  // tutorial
-      .service(show_user)   // tutorial
-      .service(create_user)   // tutorial
-      .service(update_user)    // tutorial
       .service(insert_login)  // Registro de usuario "/register" (post)
       .service(update_usuario_login)  // Actualizar datos de usuario "/login/{id}" (put)
       .service(auth_user)  // Generar token jwt... "/auth" (post) ... solo eso... utíl para api?

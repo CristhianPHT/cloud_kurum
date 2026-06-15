@@ -1,5 +1,5 @@
 use crate::models::NuevoLibroUsuario;
-use crate::repositories::{insert_libro_usuario, select_all_books_of_user, select_libros_public_username};
+use crate::repositories::{insert_libro_usuario, select_all_books_by_user, select_public_books_by_username};
 use crate::web::auth::extractor::get_user_id_from_token;
 use actix_web::{get, post, HttpResponse, web, HttpRequest, Responder};
 use diesel::PgConnection;
@@ -9,7 +9,7 @@ use serde_json::json;
 // use crate::schema::usuario::username;
 // use crate::web::auth::extractor::get_user_id_from_token;
 use crate::infrastructure::db::establish_connection;
-use crate::repositories::select_libros_por_usuario;
+use crate::repositories::select_books_by_user_images;
 
 #[get("/me/libros")]
 pub async fn get_all_books_user(req: HttpRequest) -> impl Responder {
@@ -18,7 +18,7 @@ pub async fn get_all_books_user(req: HttpRequest) -> impl Responder {
     Err(response) => return response,
   };
   let mut conn: PgConnection = establish_connection();
-  match select_all_books_of_user(&mut conn, user_id) {
+  match select_all_books_by_user(&mut conn, user_id) {
     Ok(vecto_libro) => HttpResponse::Ok().json(vecto_libro),
     Err(_) => HttpResponse::InternalServerError()
     .json(json!({"no hay relaciones...": "Error InternalServerError"})),
@@ -35,7 +35,7 @@ pub async fn get_books_x_user(req: HttpRequest) -> impl Responder { //  id_usuar
 
   let mut conn = establish_connection();
 
-  match select_libros_por_usuario(&mut conn, user_id) {
+  match select_books_by_user_images(&mut conn, user_id) {
     Ok(usuario) => HttpResponse::Ok().json(usuario),
     Err(_) => HttpResponse::InternalServerError()
       .json(json!({ "error": "No se pudo obtener el usuario" })),
@@ -57,7 +57,7 @@ pub async fn get_libros_publicos_x_user(username_link: web::Path<String> ) -> im
   let usuariox = username_link.into_inner();
   let mut conn = establish_connection();
 
-  match select_libros_public_username(&mut conn, &usuariox) {
+  match select_public_books_by_username(&mut conn, &usuariox) {
     Ok(libros) => HttpResponse::Ok().json(libros),
     // Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los datos del usuario" })), // Result<diesel::result::Error>
     Err(_) => HttpResponse::NotFound()

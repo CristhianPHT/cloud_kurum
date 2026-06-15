@@ -251,3 +251,79 @@ Usuario
 Libro
 ├─ Capítulos
 └─ Metadata = usuario datos...?
+
+# Nomenclatura
+
+## Clave primaria (Base de datos)
+
+Todas las tablas utilizan:
+
+```sql
+id
+```
+
+Ejemplo:
+
+```sql
+libro
+├─ id
+autor
+├─ id
+```
+
+## Clave foránea (Base de datos)
+
+Las relaciones utilizan el nombre de la tabla referenciada seguido de `_id`.
+
+Formato:
+
+```text
+tabla_id
+```
+
+Ejemplos:
+
+```sql
+autor_id, editorial_id, categoria_id
+```
+
+## Alias de clave primaria (Rust / ORM)
+
+Al importar múltiples columnas `id`, se utiliza un alias para evitar conflictos de nombres.
+
+Formato:
+
+```text
+id_tabla
+```
+
+Ejemplos:
+
+```rust
+use crate::schema::libro::dsl::id as id_libro;
+use crate::schema::autor::dsl::id as id_autor;
+use crate::schema::editorial::dsl::id as id_editorial;
+```
+
+## Resumen
+
+| Contexto       | Formato    |
+| -------------- | ---------- |
+| Clave primaria | `id`       |
+| Clave foránea  | `tabla_id` |
+| Alias Rust/ORM | `id_tabla` |
+
+### Ejemplo completo
+
+```sql
+libro
+├─ id
+├─ autor_id
+autor
+├─ id
+```
+
+```rust
+use crate::schema::libro::dsl::{id as id_libro, autor_id };
+use crate::schema::autor::dsl::{ id as id_autor};
+```

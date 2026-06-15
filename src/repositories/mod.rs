@@ -5,7 +5,7 @@ pub mod generos;
 pub mod libros;
 pub mod relaciones;
 pub mod repository;
-pub mod usuarios;
+// pub mod usuarios; // muerto por schema
 pub mod libro_usuario;
 
 pub use account::*;

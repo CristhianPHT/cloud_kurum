@@ -1,0 +1,19 @@
+
+-- CREATE TABLE sessions (
+--   id SERIAL PRIMARY KEY,
+--   user_id INT NOT NULL,
+--   dispositivo VARCHAR,
+--   direccion_ip VARCHAR,
+--   inicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES usuario(id)
+-- );
+
+-- CREATE TABLE multidispositivos (
+--   id SERIAL PRIMARY KEY,
+--   user_id INT NOT NULL,
+--   dispositivo_nombre VARCHAR NOT NULL,
+--   device_tipo VARCHAR,
+--   confianza BOOLEAN NOT NULL DEFAULT false,
+--   CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES usuario(id)
+-- );

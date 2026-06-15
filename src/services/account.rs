@@ -15,13 +15,12 @@ pub fn register_user( conn: &mut PgConnection, json_dto: RegisterAccount ) -> Qu
   let now = chrono::Utc::now().naive_utc();
   let nuevo = NuevoAccount {
     nickname: json_dto.nickname,
-    perfil: None,
     username: json_dto.username,
     password_hash: hashed_password,
     email: json_dto.email,
-    actualizacion: now,
-    activo: true,
-    creado: now,
+    is_active: true,
+    updated_at: now,
+    created_at: now,
   };
 
   account_repository::insert_usuario(

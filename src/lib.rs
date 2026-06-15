@@ -19,15 +19,15 @@ pub mod web {
 pub use infrastructure::db::establish_connection;
 
 // Re-exportar funciones por categoría
-pub mod usuarios {
-    pub use crate::repositories::usuarios::*;
-}
+// pub mod usuarios {
+//     pub use crate::repositories::usuarios::*;
+// }
 
 pub mod account {
     pub use crate::services::account::{register_user, login_usuario_hashed, update_login};
     pub use crate::repositories::account::{
-        login_usuario_hashed_old, select_id_usuario, select_usuario_por_username, username_existe, select_header_user,
-    };
+        login_usuario_hashed_old, select_usuario_por_nickname,
+        select_usuario_por_id, username_existe, select_header_by_id};
 }
 
 pub mod auth {
@@ -39,7 +39,9 @@ pub mod libros {
     pub use crate::repositories::libros::{insert_libro_nuevo, select_libro_main, select_nombre_libros};
 }
 pub mod libro_usuario {
-    pub use crate::repositories::libro_usuario::select_libros_por_usuario;
+    pub use crate::repositories::libro_usuario::{
+    insert_libro_usuario, select_public_books_by_username,
+    select_all_books_by_user, select_books_by_user_images};
 }
 pub mod generos {
     pub use crate::repositories::generos::*;
@@ -52,7 +54,8 @@ pub mod relaciones {
 // Re-exportar funciones principales para mantener compatibilidad con código existente
 pub use services::account::{register_user, login_usuario_hashed, update_login};
 pub use repositories::account::{
-    login_usuario_hashed_old, select_id_usuario, select_usuario_por_username, username_existe, select_header_user,
+    insert_usuario, select_usuario_por_nickname, select_usuario_por_id,
+    username_existe,select_header_by_id
 };
 pub use repositories::auth::{insert_auth_token, select_id_token};
 pub use services::auth::{calculate_expiration, generate_jwt};
@@ -60,4 +63,4 @@ pub use repositories::database::{generic_insert, select_by_id};
 pub use repositories::generos::{insert_gen_new, select_gen_all, select_gen_unico};
 pub use repositories::libros::{insert_libro_nuevo, select_libro_main, select_nombre_libros};
 pub use repositories::relaciones::{buscar_libros_por_genero, insert_libro_genero, OrdenamientoLibro};
-pub use repositories::usuarios::{insert_user, select_all_users, select_id, update_user_id};
+// pub use repositories::usuarios::{insert_user, select_all_users, select_id, update_user_id};

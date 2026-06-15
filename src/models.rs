@@ -1,33 +1,9 @@
 use serde::{Deserialize, Serialize};
 use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 #[allow(unused_imports)]
-use crate::schema::{usuariosss, usuario, token_recuperacion, auth_tokens, multidispositivos, sessions};   // Login (usuario)
+use crate::schema::{usuario, token_recuperacion, auth_tokens, imagen_perfil};   // Login (usuario)
 
 use chrono::NaiveDateTime;    // O NaiveDateTime si usas timestamps con zona horaria
-
-
-
-// ----------------- testing testing - testing - testing - testing - testing - testing
-#[derive(Queryable, Serialize, Debug)]  // Queryable para obtener datos de la base de datos con ID
-#[diesel(table_name = usuariosss)]
-pub struct Usuario {  // Struct para obtener datos de la base de datos (SELECT)
-    pub id: i32,
-    pub nombre: String,
-    pub apellido: Option<String>,
-}
-#[derive(Insertable, Deserialize, Serialize, Clone)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
-#[diesel(table_name = usuariosss)]
-pub struct NuevoUsuario {  // Struct para insertar datos en la base de datos (INSERT)
-    pub nombre: String,
-    pub apellido: String,
-}
-#[derive(Deserialize)]  // Deserialize para recibir objetos JSON
-pub struct UsuarioUpdate {  // Struct para actualizar datos de la base de datos (UPDATE)
-    pub nombre: Option<String>,
-    pub apellido: Option<String>,
-}
-
-
 
 // ------------------- Usuario real - Usuario - real --------------------------------
 #[derive(Queryable, Serialize, Debug, Deserialize)]
@@ -42,34 +18,63 @@ pub struct LoginAccount {   // Logearse legalmente como usuario (post)
 #[diesel(table_name = usuario)]
 pub struct NiceAccount {    // Temporalmente con todos los atributos de usuario|account que será usado para lectura usando el id 
     pub id: i32,
-    pub nickname: Option<String>,
-    pub perfil: Option<String>,
+    pub nickname: String,
     pub username: String,
     pub password_hash: String,
     pub email: String,
-    pub actualizacion: NaiveDateTime,
-    pub activo: bool,
-    pub creado: NaiveDateTime
+    // pub is_active: bool, 
+    pub is_active: bool,   // validación para cuentas antiguas y eliminación...
+    pub updated_at: NaiveDateTime,  // Fecha de actualización
+    pub created_at: NaiveDateTime   // Fecha de creación
 }
 
 #[derive(Queryable, Serialize)]
 #[diesel(table_name = usuario )]
 pub struct HeaderAccount {
-    pub nickname: Option<String>,
-    pub perfil: Option<String>
+    pub nickname: String,   // apodo
+    pub url_image: Option<String>     // imagen (portada/icon/foto de perfil)
 }
 
 #[derive(Insertable, Deserialize, Serialize, Clone, AsChangeset)]  // Agregamos Deserialize, Serialize para recibir y enviar objetos JSON
 #[diesel(table_name = usuario)]
 pub struct NuevoAccount {  // Struct para insertar datos en la base de datos (INSERT, UPDATE) (post, put) (Para nuevos usuario y para configuración o edit de perfil)
     pub nickname: Option<String>,       // Apodo
-    pub perfil: Option<String>,     // Imagen de perfil 
     pub username: String,       // gmail, o con lo que ingresará por arriba ---> LoginAccount ...
     pub password_hash: String,      // Contraseña o con lo que ingresará por abajo ---> LoginAccount ...
     pub email: String,      // gmail, para recuperacion de la cuenta
-    pub actualizacion: NaiveDateTime,   // Última actualización hecho sobre la cuenta
-    pub activo: bool,
-    pub creado: NaiveDateTime
+    pub is_active: bool,
+    pub updated_at: NaiveDateTime,   // Última actualización hecho sobre la cuenta
+    pub created_at: NaiveDateTime
+}
+#[derive(Insertable)]
+#[diesel(table_name = imagen_perfil)]
+pub struct NewImagenPerfil {
+    pub user_id: i32,
+    pub url_image: String,
+    pub tipo: String,
+    pub nombre: String,
+    pub is_active: bool,
+    pub mime_type: String,
+    pub tamano_bytes: i64,
+    pub ancho: Option<i32>,
+    pub alto: Option<i32>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime
+}
+#[derive(Queryable)]
+pub struct ImagenPerfil{
+    pub id: i32,
+    pub user_id: i32,
+    pub url_image: String,
+    pub tipo: String,
+    pub nombre: String,
+    pub is_activo: bool,
+    pub mime_type: String,
+    pub tamano_bytes: i64,
+    pub ancho: i32,
+    pub alto: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime
 }
 // *-*-*-*-*-*-*-*-* Finalización para el manejo de la Cuenta *-*-*-*-*-*-*-*-*
 // ------------------- Clave para poder recuperar cuenta -------------------
@@ -89,7 +94,7 @@ pub struct Recuperacion {  // Struct para obtener datos de la base de datos (SEL
 pub struct NuevoRecuperacion {  // Struct para insertar datos en la base de datos (INSERT)
     pub user_id: i32,
     pub token: String,
-    pub tipo: bool,
+    pub tipo: String, // era bool?
     pub expira: NaiveDateTime,
 }
 // *-*-*-*-*-*-*-*-* Finalización para la recuperación *-*-*-*-*-*-*-*-*
@@ -103,7 +108,7 @@ pub struct NuevoAuthToken {  // Struct para insertar datos en la base de datos (
     pub token: String,
     pub dispositivo: Option<String>,
     pub expira: NaiveDateTime,
-    pub activo: bool,
+    pub is_active: bool,
 }
 #[derive(Queryable, Serialize, Debug)] // Select de los datos
 #[diesel(table_name = auth_tokens)]
@@ -113,7 +118,7 @@ pub struct AuthToken {
     pub token: String,
     pub dispositivo: Option<String>,
     pub expira: NaiveDateTime,
-    pub activo: bool,
+    pub is_active: bool,
 }
 #[derive(Serialize, Deserialize)] // no base de datos.
 pub struct Claims {
@@ -154,23 +159,23 @@ use crate::schema::libro;   // Biblioteca all
 #[diesel(table_name = libro)]
 pub struct LibroDashboard { // Dashboard de libros, para mostrar en la pagina principal
     pub id: i32,
-    pub titulo: Option<String>,
+    pub titulo: String,
     pub perfil: Option<String>,
 }
 
-#[derive(Queryable, Serialize, Selectable)]
+#[derive(Queryable, Serialize, Selectable, Identifiable)]
 #[diesel(table_name = libro)]
 pub struct Libro {     // Esta Structura como get (json) o select * from libro (postgres)
     pub id: i32,
-    pub titulo: Option<String>,
-    pub perfil: Option<String>,
+    pub titulo: String,
+    pub slug: String,
     pub sinopsis: Option<String>,
-    pub tipo: Option<String>,
-    pub capitulos: Option<String>,
-    pub publicacion: chrono::NaiveDate,
-    pub estado: Option<String>,
+    pub tipo_id: i32,
+    pub publicacion: chrono::NaiveDate, // NaiveDateTime por sql...
+    pub estado_id: i32,
     pub visibilidad: Option<bool>,
-    pub creado_por: i32,
+    pub updated_at: NaiveDateTime,
+    pub created_at: NaiveDateTime
 }
 
 use chrono::NaiveDate;
@@ -179,14 +184,46 @@ use chrono::NaiveDate;
 #[diesel(table_name = libro)]
 pub struct NuevoLibro {     // Struct para insertar datos en la base de datos (INSERT)
     pub titulo: String,
-    pub perfil: Option<String>,
+    pub slug: String,
     pub sinopsis: Option<String>,
-    pub tipo: Option<String>,
-    pub capitulos: Option<String>,
+    pub tipo_id: i32,
     pub publicacion: NaiveDate,     // NaiveDate por que en la base de datos es type Date (solo fecha)
-    pub estado: String,
-    pub visibilidad: bool,
-    pub creado_por: i32,
+    pub estado_id: i32,
+    pub visibilidad: Option<bool>,
+    pub updated_at: NaiveDateTime,
+    pub created_at: NaiveDateTime,
+}
+
+// CREATE TABLE imagen_libro (
+//     id SERIAL PRIMARY KEY,
+//     libro_id INT NOT NULL,
+//     url_image TEXT NOT NULL,  -- url o link de la imagen, cloudflare r2.
+//     tipo VARCHAR(20) NOT NULL, -- será check luego: "portada", "BANNER", etc
+//     nombre VARCHAR (255) NOT NULL, -- necesario para frontend, alt = nombre.
+//     is_active BOOLEAN NOT NULL, -- false para imágen de portada antiguas y true for main
+//     mime_type VARCHAR (255) NOT NULL, -- image/jpeg, image/png, image/webp, etc.
+//     tamano_bytes BIGINT NOT NULL, -- tamaño en bytes de la imagen.
+//     ancho INT, -- pixeles
+//     alto INT, -- PIXELES
+//     created_at TIMESTAMP NOT NULL,
+//     updated_at TIMESTAMP NOT NULL,
+//     CONSTRAINT fk_imagen_libro FOREIGN KEY (libro_id) REFERENCES libro(id) ON DELETE CASCADE
+//   );
+use crate::schema::imagen_libro;
+#[derive(Queryable, Serialize, Selectable, Identifiable)]
+#[diesel(table_name = imagen_libro)]
+pub struct ImagenLibro{
+    pub id: i32,
+    pub libro_id: i32,
+    pub url_image: String,
+    pub tipo: String,
+    pub nombre: String,
+    pub is_active: bool,
+    pub mime_type: String,
+    pub tamano_bytes: i64,
+    pub ancho: Option<i32>,
+    pub alto: Option<i32>,
+    pub updated_at: NaiveDateTime
 }
 
 // --------------------------------------- Libro x Usuario -------------------------------------------
@@ -201,13 +238,14 @@ pub struct NuevoLibro {     // Struct para insertar datos en la base de datos (I
 //     pub creado: NaiveDateTime, // -> Timestamp
 // }
 
-use crate::schema::libro_usuario;   // siempre llamar crate::schema para "Insertable"
+use crate::schema::usuario_libro;   // siempre llamar crate::schema para "Insertable"
 #[derive(Insertable, Deserialize, Serialize)]   // Clone
-#[diesel(table_name = libro_usuario)]
+#[diesel(table_name = usuario_libro)]
 pub struct NuevoLibroUsuario { // tabla relacional
-    pub fk_usuario: i32,
-    pub fk_libro: i32,
+    pub usuario_id: i32,
+    pub libro_id: i32,
     pub estado: Option<String>,
+    pub favorito: bool,
     pub creado: NaiveDateTime
 }
 
@@ -240,21 +278,22 @@ pub struct NuevoLibroUsuario { // tabla relacional
 // }
 use diesel::Associations;
 #[derive(Queryable, Identifiable, Associations)] // ,Selectable, Queryable, Associations, Debug, 
-#[diesel(belongs_to(Libro, foreign_key = fk_libro))]
-#[diesel(belongs_to(NiceAccount, foreign_key = fk_usuario))]
-#[diesel(table_name = libro_usuario)]
+#[diesel(belongs_to(Libro, foreign_key = libro_id))]
+#[diesel(belongs_to(NiceAccount, foreign_key = usuario_id))]
+#[diesel(table_name = usuario_libro)]
 pub struct RelationLibroUsuario{
     pub id: i32, // -> Int4
-    pub fk_usuario: i32, // -> Nullable<Int4>
-    pub fk_libro: i32, // -> Nullable<Int4>
+    pub usuario_id: i32, // -> Nullable<Int4>
+    pub libro_id: i32, // -> Nullable<Int4>
     pub estado: Option<String>, // -> Nullable<Varchar> maxlength 50
+    pub favorito: bool,
     pub creado: NaiveDateTime, // -> Timestamp
 }
 
 
 
 #[derive(Queryable, Serialize, Debug)]
-#[diesel(table_name = libro_usuario)]
+#[diesel(table_name = usuario_libro)]
 pub struct AllLibroxUsuario {
     pub relacion_id: i32,           // id en libro_usuario
     pub usuario_id: Option<i32>,    // fk_usuario   
@@ -267,12 +306,12 @@ pub struct AllLibroxUsuario {
 }
 
 // -------------------------------------------- Género ------------------------------------------------
-use crate::schema::{genero, capitulos};
+use crate::schema::genero;
 #[derive(Queryable, Serialize)]
 #[diesel(table_name = genero)]
 pub struct Genero {
     pub id: i32,
-    pub nombre: Option<String>,
+    pub nombre: String,
     pub descripcion: Option<String>,
 }
 #[derive(Insertable, Deserialize, Serialize)]
@@ -284,7 +323,7 @@ pub struct NuevoGenero {
 // ----------------------------------------------------------------------
 use crate::schema::libro_genero;
 
-#[derive(Insertable, Deserialize)]
+#[derive(Insertable, Queryable, Serialize, Deserialize, Selectable)]
 #[diesel(table_name = libro_genero)]
 pub struct NuevoLibroGenero {
     pub libro_id: i32,
@@ -302,20 +341,6 @@ pub struct LibroGenero {
     pub genero_id: i32,
 }
 // ---------------------------------------------
-
-
-#[derive(Queryable, Serialize, Selectable, Debug)]
-#[diesel(table_name = capitulos)]
-#[diesel(belongs_to(Libro))]
-pub struct Capitulos{
-    pub id: i32,
-    pub nombre: String,
-    pub link: String,
-    pub imagen: String,
-    pub fk_libro: i32,
-}
-
-
 
 
 

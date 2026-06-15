@@ -6,4 +6,4 @@ file = "src/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "/home/kurum/Documentos/programacion/cloud_kurum/migrations"
+dir = "/home/kurum/Programacion/cloud_kurum/migrations/"

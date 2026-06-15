@@ -15,6 +15,7 @@ sudo -u postgres psql -l
 ```
 ##### Conectarse con la base de datos:
 ```bash
+sudo -u postgres psql
 sudo -i -u postgres
 psql
 ```
@@ -71,3 +72,5 @@ diesel migration redo
 2026-06-07_progreso
 2026-06-07_comentario
 2026-06-07_valoracion
+## Verificar migrations en diesel.toml
+Es en ese archivo dónde diesel revisa y pueda trabajar en la carpeta que debe de trabajar

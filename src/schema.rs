@@ -5,50 +5,59 @@ diesel::table! {
         id -> Int4,
         user_id -> Int4,
         token -> Text,
-        dispositivo -> Nullable<Varchar>,
+        dispositivo -> Nullable<Text>,
         expira -> Timestamp,
-        activo -> Bool,
+        is_active -> Bool,
     }
 }
 
 diesel::table! {
     autor (id) {
         id -> Int4,
-        fk_libro -> Nullable<Int4>,
-        #[max_length = 100]
-        nombre -> Nullable<Varchar>,
-        #[max_length = 100]
-        apellido -> Nullable<Varchar>,
-        perfil -> Nullable<Varchar>,
+        #[max_length = 255]
+        nombre -> Varchar,
+        #[max_length = 255]
+        apellido -> Varchar,
     }
 }
 
 diesel::table! {
-    capitulos (id) {
+    bloque_capitulo (id) {
         id -> Int4,
-        nombre -> Nullable<Varchar>,
-        link -> Nullable<Text>,
-        imagen -> Nullable<Text>,
-        fk_libro -> Nullable<Int4>,
+        capitulo_id -> Int4,
+        orden -> Int4,
+        #[max_length = 20]
+        tipo -> Varchar,
+        recurso_url -> Text,
+        #[max_length = 20]
+        layout -> Nullable<Varchar>,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    capitulo (id) {
+        id -> Int4,
+        libro_id -> Int4,
+        numero -> Int4,
+        #[max_length = 255]
+        titulo -> Nullable<Varchar>,
+        visibilidad -> Bool,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
 diesel::table! {
     etiqueta (id) {
         id -> Int4,
+        #[max_length = 50]
+        nombre -> Varchar,
         imagen -> Nullable<Varchar>,
+        #[max_length = 200]
         descripcion -> Nullable<Varchar>,
         visibilidad -> Nullable<Bool>,
         color -> Nullable<Varchar>,
-        fk_usuario -> Nullable<Int4>,
-    }
-}
-
-diesel::table! {
-    etiqueta_list (id) {
-        id -> Int4,
-        fk_etiqueta -> Nullable<Int4>,
-        fk_libro -> Nullable<Int4>,
     }
 }
 
@@ -56,130 +65,113 @@ diesel::table! {
     genero (id) {
         id -> Int4,
         #[max_length = 50]
-        nombre -> Nullable<Varchar>,
+        nombre -> Varchar,
         descripcion -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
+    imagen_libro (id) {
+        id -> Int4,
+        libro_id -> Int4,
+        url_image -> Text,
+        #[max_length = 20]
+        tipo -> Varchar,
+        #[max_length = 255]
+        nombre -> Varchar,
+        is_active -> Bool,
+        #[max_length = 255]
+        mime_type -> Varchar,
+        tamano_bytes -> Int8,
+        ancho -> Nullable<Int4>,
+        alto -> Nullable<Int4>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    imagen_perfil (id) {
+        id -> Int4,
+        user_id -> Int4,
+        url_image -> Text,
+        #[max_length = 20]
+        tipo -> Varchar,
+        #[max_length = 255]
+        nombre -> Varchar,
+        is_active -> Bool,
+        #[max_length = 255]
+        mime_type -> Varchar,
+        tamano_bytes -> Int8,
+        ancho -> Nullable<Int4>,
+        alto -> Nullable<Int4>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
 diesel::table! {
     libro (id) {
         id -> Int4,
-        #[max_length = 100]
-        titulo -> Nullable<Varchar>,
-        perfil -> Nullable<Text>,
+        #[max_length = 150]
+        titulo -> Varchar,
+        #[max_length = 255]
+        slug -> Varchar,
         sinopsis -> Nullable<Text>,
-        #[max_length = 100]
-        tipo -> Nullable<Varchar>,
-        #[max_length = 100]
-        capitulos -> Nullable<Varchar>,
+        tipo_id -> Int4,
         publicacion -> Date,
-        #[max_length = 100]
-        estado -> Nullable<Varchar>,
+        estado_id -> Int4,
         visibilidad -> Nullable<Bool>,
-        creado_por -> Int4,
+        updated_at -> Timestamp,
+        created_at -> Timestamp,
     }
 }
 
 diesel::table! {
-    libro_genero (id) {
+    libro_autor (libro_id, autor_id) {
+        libro_id -> Int4,
+        autor_id -> Int4,
+    }
+}
+
+diesel::table! {
+    libro_estado (id) {
         id -> Int4,
+        #[max_length = 50]
+        nombre -> Varchar,
+    }
+}
+
+diesel::table! {
+    libro_etiqueta (libro_id, etiqueta_id) {
+        libro_id -> Int4,
+        etiqueta_id -> Int4,
+    }
+}
+
+diesel::table! {
+    libro_genero (libro_id, genero_id) {
         libro_id -> Int4,
         genero_id -> Int4,
     }
 }
 
 diesel::table! {
-    libro_usuario (id) {
+    libro_tipo (id) {
         id -> Int4,
-        fk_usuario -> Nullable<Int4>,
-        fk_libro -> Nullable<Int4>,
         #[max_length = 50]
-        estado -> Nullable<Varchar>,
-        creado -> Timestamp,
+        nombre -> Varchar,
     }
 }
 
 diesel::table! {
-    marcapaginas (id) {
+    nombre_alternativo (id) {
         id -> Int4,
-        fk_usuario -> Nullable<Int4>,
-        posicion -> Nullable<Float8>,
-        nota -> Nullable<Text>,
-        #[max_length = 50]
-        etiqueta -> Nullable<Varchar>,
-        creado -> Timestamp,
-        actualizado -> Timestamp,
-        fk_capitulo -> Nullable<Int4>,
-    }
-}
-
-diesel::table! {
-    miembros (id) {
-        id -> Int4,
-        fk_scan -> Nullable<Int4>,
-        fk_usuario -> Nullable<Int4>,
-    }
-}
-
-diesel::table! {
-    multidispositivos (id) {
-        id -> Int4,
-        user_id -> Int4,
-        dispositivo_nombre -> Varchar,
-        device_tipo -> Nullable<Varchar>,
-        confianza -> Bool,
-    }
-}
-
-diesel::table! {
-    nombres (id) {
-        id -> Int4,
-        libro_id -> Nullable<Int4>,
-        #[max_length = 100]
-        nombre -> Nullable<Varchar>,
-        descripcion -> Nullable<Text>,
-    }
-}
-
-diesel::table! {
-    publicador (id) {
-        id -> Int4,
-        scan_id -> Nullable<Int4>,
-        autor_id -> Nullable<Int4>,
-        libro_id -> Nullable<Int4>,
-    }
-}
-
-diesel::table! {
-    puntaje (id) {
-        id -> Int4,
-        usuario_id -> Nullable<Int4>,
-        libro_id -> Nullable<Int4>,
-        calificacion -> Nullable<Float8>,
-        fecha_calificacion -> Timestamp,
-    }
-}
-
-diesel::table! {
-    scan (id) {
-        id -> Int4,
-        nombre -> Nullable<Varchar>,
-        portada -> Nullable<Text>,
-        perfil -> Nullable<Text>,
-        descripcion -> Nullable<Varchar>,
-        redsocial -> Nullable<Varchar>,
-        creacion -> Timestamp,
-    }
-}
-
-diesel::table! {
-    sessions (id) {
-        id -> Int4,
-        user_id -> Int4,
-        dispositivo -> Nullable<Varchar>,
-        direccion_ip -> Nullable<Varchar>,
-        inicio -> Timestamp,
-        actualizacion -> Timestamp,
+        libro_id -> Int4,
+        #[max_length = 12]
+        codigo -> Varchar,
+        nombre -> Text,
+        is_original -> Bool,
     }
 }
 
@@ -187,8 +179,9 @@ diesel::table! {
     token_recuperacion (id) {
         id -> Int4,
         user_id -> Int4,
-        token -> Varchar,
-        tipo -> Nullable<Bool>,
+        token -> Text,
+        #[max_length = 20]
+        tipo -> Varchar,
         expira -> Timestamp,
     }
 }
@@ -198,61 +191,46 @@ diesel::table! {
         id -> Int4,
         #[max_length = 60]
         nickname -> Varchar,
-        perfil -> Nullable<Text>,
         #[max_length = 60]
         username -> Varchar,
         password_hash -> Text,
-        #[max_length = 60]
+        #[max_length = 255]
         email -> Varchar,
-        actualizacion -> Timestamp,
-        activo -> Bool,
+        is_active -> Bool,
+        updated_at -> Timestamp,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    usuario_libro (id) {
+        id -> Int4,
+        usuario_id -> Int4,
+        libro_id -> Int4,
+        #[max_length = 50]
+        estado -> Nullable<Varchar>,
+        favorito -> Bool,
         creado -> Timestamp,
     }
 }
 
 diesel::joinable!(auth_tokens -> usuario (user_id));
-diesel::joinable!(autor -> libro (fk_libro));
-diesel::joinable!(capitulos -> libro (fk_libro));
-diesel::joinable!(etiqueta -> usuario (fk_usuario));
-diesel::joinable!(etiqueta_list -> etiqueta (fk_etiqueta));
-diesel::joinable!(etiqueta_list -> libro (fk_libro));
-diesel::joinable!(libro -> usuario (creado_por));
+diesel::joinable!(bloque_capitulo -> capitulo (capitulo_id));
+diesel::joinable!(capitulo -> libro (libro_id));
+diesel::joinable!(imagen_libro -> libro (libro_id));
+diesel::joinable!(imagen_perfil -> usuario (user_id));
+diesel::joinable!(libro -> libro_estado (estado_id));
+diesel::joinable!(libro -> libro_tipo (tipo_id));
+diesel::joinable!(libro_autor -> autor (autor_id));
+diesel::joinable!(libro_autor -> libro (libro_id));
+diesel::joinable!(libro_etiqueta -> etiqueta (etiqueta_id));
+diesel::joinable!(libro_etiqueta -> libro (libro_id));
 diesel::joinable!(libro_genero -> genero (genero_id));
 diesel::joinable!(libro_genero -> libro (libro_id));
-diesel::joinable!(libro_usuario -> libro (fk_libro));
-diesel::joinable!(libro_usuario -> usuario (fk_usuario));
-diesel::joinable!(marcapaginas -> capitulos (fk_capitulo));
-diesel::joinable!(marcapaginas -> usuario (fk_usuario));
-diesel::joinable!(miembros -> scan (fk_scan));
-diesel::joinable!(miembros -> usuario (fk_usuario));
-diesel::joinable!(multidispositivos -> usuario (user_id));
-diesel::joinable!(nombres -> libro (libro_id));
-diesel::joinable!(publicador -> capitulos (libro_id));
-diesel::joinable!(publicador -> scan (scan_id));
-diesel::joinable!(publicador -> usuario (autor_id));
-diesel::joinable!(puntaje -> libro (libro_id));
-diesel::joinable!(puntaje -> usuario (usuario_id));
-diesel::joinable!(sessions -> usuario (user_id));
+diesel::joinable!(nombre_alternativo -> libro (libro_id));
 diesel::joinable!(token_recuperacion -> usuario (user_id));
+diesel::joinable!(usuario_libro -> libro (libro_id));
+diesel::joinable!(usuario_libro -> usuario (usuario_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    auth_tokens,
-    autor,
-    capitulos,
-    etiqueta,
-    etiqueta_list,
-    genero,
-    libro,
-    libro_genero,
-    libro_usuario,
-    marcapaginas,
-    miembros,
-    multidispositivos,
-    nombres,
-    publicador,
-    puntaje,
-    scan,
-    sessions,
-    token_recuperacion,
-    usuario,
-);
+    auth_tokens,autor,bloque_capitulo,capitulo,etiqueta,genero,imagen_libro,imagen_perfil,libro,libro_autor,libro_estado,libro_etiqueta,libro_genero,libro_tipo,nombre_alternativo,token_recuperacion,usuario,usuario_libro,);

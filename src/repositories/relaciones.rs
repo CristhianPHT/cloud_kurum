@@ -1,14 +1,16 @@
 use crate::models::{Libro, NuevoLibroGenero};
-use crate::schema::libro_genero::dsl::{id as libro_genero_id, libro_genero};
+use crate::schema::libro_genero::dsl::{ libro_genero};
 use diesel::dsl::insert_into;
 use diesel::prelude::*;
 
-pub fn insert_libro_genero(conn: &mut PgConnection, lib_gen_data: NuevoLibroGenero) -> QueryResult<i32> {
+pub fn insert_libro_genero( conn: &mut PgConnection, lib_gen_data: NuevoLibroGenero ) -> QueryResult<NuevoLibroGenero> {
+    use crate::schema::libro_genero::dsl::{libro_id, genero_id};
     insert_into(libro_genero)
         .values(&lib_gen_data)
-        .returning(libro_genero_id)
-        .get_result(conn)
+        .returning((libro_id, genero_id))
+        .get_result::<NuevoLibroGenero>(conn)
 }
+
 
 #[derive(Debug)]
 pub enum OrdenamientoLibro {
