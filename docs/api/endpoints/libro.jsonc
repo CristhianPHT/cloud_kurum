@@ -1,0 +1,88 @@
+{
+    "endpoints": {
+      "libros": {
+        "listar": {
+          "method": "GET",
+          "path": "/api/libros",
+          "descripcion": "Listar libros con filtros (paginación, búsqueda, tipo, estado)"
+        },
+        "crear": {
+          "method": "POST", 
+          "path": "/api/libros",
+          "descripcion": "Crear nuevo libro"
+        },
+        "obtener": {
+          "method": "GET",
+          "path": "/api/libros/:slug",  // 👈 CAMBIO: usar slug en lugar de id para URLs amigables
+          "descripcion": "Obtener libro por slug (para SEO)"
+        },
+        "actualizar": {
+          "method": "PUT",
+          "path": "/api/libros/:id",  // 👈 usamos :id para actualizaciones internas
+          "descripcion": "Actualizar libro por ID"
+        },
+        "eliminar": {
+          "method": "PUT",  // DELETE lógico
+          "path": "/api/libros/delete/:id",  // 👈 usamos :id para operaciones internas
+          "descripcion": "Eliminar libro (lógico)"
+        }
+      },
+  
+  
+  "imagenes": {
+    "subir": {
+      "method": "POST",
+      "path": "/api/libros/:id/imagenes",
+      "descripcion": "Subir imagen para libro"
+    },
+    "eliminar": {
+      "method": "DELETE",
+      "path": "/api/libros/:id/imagenes/:imagen_id",
+      "descripcion": "Eliminar imagen específica"
+    },
+    "establecer_principal": {  // 👈 NUEVO: útil para cambiar portada activa
+      "method": "PUT",
+      "path": "/api/libros/:id/imagenes/:imagen_id/main",
+      "descripcion": "Establecer imagen como portada principal"
+    }
+  },
+  
+  "nombres_alternativos": {
+    "listar": {  // 👈 NUEVO: obtener todos los nombres alternativos del libro
+      "method": "GET",
+      "path": "/api/libros/:id/names",
+      "descripcion": "Listar nombres alternativos del libro"
+    },
+    "crear": {
+      "method": "POST",
+      "path": "/api/libros/:id/names",
+      "descripcion": "Añadir nombre alternativo"
+    },
+    "actualizar": {  // 👈 NUEVO: editar nombre alternativo
+      "method": "PUT",
+      "path": "/api/libros/:id/names/:name_id",
+      "descripcion": "Actualizar nombre alternativo"
+    },
+    "eliminar": {
+      "method": "DELETE",
+      "path": "/api/libros/:id/names/:name_id",
+      "descripcion": "Eliminar nombre alternativo"
+    }
+  },
+  
+  "catalogos": {
+    "tipos": {
+      "method": "GET",
+      "path": "/api/catalogos/tipos",  // 👈 CAMBIO: mejor agrupación semántica
+      "descripcion": "Obtener tipos de libros (Novela, Comic, etc.)"
+    },
+    "estados": {
+      "method": "GET",
+      "path": "/api/catalogos/estados",  // 👈 CAMBIO: mejor agrupación semántica
+      "descripcion": "Obtener estados de libros (Publicando, Finalizado, etc.)"
+    }
+  }
+  
+  
+    }
+  }

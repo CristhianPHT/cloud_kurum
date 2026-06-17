@@ -1,0 +1,226 @@
+
+### 2. `docs/api/openapi.yaml` (Especificación OpenAPI)
+
+```yaml
+openapi: 3.0.0
+info:
+  title: API Biblioteca
+  description: API REST para gestión de libros
+  version: 1.0.0
+  contact:
+    name: Tu Nombre
+    email: tu@email.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor de desarrollo
+  - url: https://api.biblioteca.com/api
+    description: Servidor de producción
+
+paths:
+  /libros:
+    get:
+      summary: Listar libros
+      description: Obtiene lista paginada de libros (solo activos)
+      parameters:
+        - name: pagina
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limite
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: tipo
+          in: query
+          schema:
+            type: string
+          description: Filtrar por tipo de libro
+      responses:
+        '200':
+          description: Lista de libros
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Libro'
+                  paginacion:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      pagina:
+                        type: integer
+                      limite:
+                        type: integer
+
+    post:
+      summary: Crear libro
+      description: Crea un nuevo libro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibroCrear'
+      responses:
+        '201':
+          description: Libro creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Libro'
+        '400':
+          description: Error de validación
+
+  /libros/{slug}:
+    get:
+      summary: Obtener libro por slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Libro encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Libro'
+        '404':
+          description: Libro no encontrado
+
+  /libros/{id}:
+    put:
+      summary: Actualizar libro
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibroActualizar'
+      responses:
+        '200':
+          description: Libro actualizado
+        '404':
+          description: Libro no encontrado
+
+  /libros/{id}/imagenes:
+    post:
+      summary: Subir imagen para libro
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+                tipo:
+                  type: string
+                  enum: [portada, banner, galeria]
+                nombre:
+                  type: string
+      responses:
+        '201':
+          description: Imagen subida
+        '404':
+          description: Libro no encontrado
+
+components:
+  schemas:
+    Libro:
+      type: object
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        slug:
+          type: string
+        sinopsis:
+          type: string
+        tipo:
+          type: string
+        estado:
+          type: string
+        publicacion:
+          type: string
+          format: date
+        visibilidad:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    LibroCrear:
+      type: object
+      required:
+        - titulo
+        - tipo_id
+        - publicacion
+      properties:
+        titulo:
+          type: string
+          maxLength: 150
+        sinopsis:
+          type: string
+        tipo_id:
+          type: integer
+        estado_id:
+          type: integer
+          default: 1
+        publicacion:
+          type: string
+          format: date
+        visibilidad:
+          type: boolean
+          default: true
+
+    LibroActualizar:
+      type: object
+      properties:
+        titulo:
+          type: string
+        sinopsis:
+          type: string
+        tipo_id:
+          type: integer
+        estado_id:
+          type: integer
+        publicacion:
+          type: string
+          format: date
+        visibilidad:
+          type: boolean
+
+tags:
+  - name: Libros
+    description: Operaciones con libros
+  - name: Imágenes
+    description: Gestión de imágenes de libros

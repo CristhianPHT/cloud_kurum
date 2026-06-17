@@ -1,0 +1,251 @@
+{
+    "endpoints": {
+      "usuarios": {
+        "registrar": {
+          "method": "POST",
+          "path": "/api/usuarios/registrar",
+          "descripcion": "Registrar nuevo usuario",
+          "autenticacion": false,
+          "body": {
+            "nickname": "tech_lover",  // opcional: si no se envía, se genera automático
+            "username": "tecnologico2024",
+            "password": "MiPassword123!",  // frontend: en texto plano, backend hashea
+            "email": "usuario@ejemplo.com"
+            // is_active: backend asigna true por defecto
+          },
+          "respuesta": {
+            "id": 1,
+            "nickname": "tech_lover",
+            "username": "tecnologico2024",
+            "email": "usuario@ejemplo.com",
+            "is_active": true,
+            "created_at": "2024-01-15T10:30:00Z"
+          }
+        },
+        
+        "login": {
+          "method": "POST",
+          "path": "/api/usuarios/login",
+          "descripcion": "Iniciar sesión (retorna JWT)",
+          "autenticacion": false,
+          "body": {
+            "email": "usuario@ejemplo.com",
+            "password": "MiPassword123!"
+          },
+          "respuesta": {
+            "token": "eyJhbGciOiJIUzI1NiIs...",
+            "usuario": {
+              "id": 1,
+              "nickname": "tech_lover",
+              "username": "tecnologico2024",
+              "email": "usuario@ejemplo.com"
+            }
+          }
+        },
+        
+        "perfil": {
+          "method": "GET",
+          "path": "/api/usuarios/perfil",
+          "descripcion": "Obtener perfil del usuario autenticado",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "id": 1,
+            "nickname": "tech_lover",
+            "username": "tecnologico2024",
+            "email": "usuario@ejemplo.com",
+            "is_active": true,
+            "created_at": "2024-01-15T10:30:00Z",
+            "updated_at": "2024-01-15T10:30:00Z"
+          }
+        },
+        
+        "actualizar": {
+          "method": "PUT",
+          "path": "/api/usuarios/perfil",
+          "descripcion": "Actualizar perfil del usuario autenticado",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "body": {
+            "nickname": "tech_lover_actualizado",  // opcional
+            "username": "tecnologico2025",  // opcional
+            "email": "nuevo@ejemplo.com"  // opcional
+          },
+          "respuesta": {
+            "id": 1,
+            "nickname": "tech_lover_actualizado",
+            "username": "tecnologico2025",
+            "email": "nuevo@ejemplo.com",
+            "updated_at": "2024-01-16T14:20:00Z"
+          }
+        },
+        
+        "cambiar_password": {
+          "method": "PUT",
+          "path": "/api/usuarios/perfil/password",
+          "descripcion": "Cambiar contraseña del usuario autenticado",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "body": {
+            "password_actual": "MiPassword123!",
+            "password_nueva": "NuevaPassword456!"
+          },
+          "respuesta": {
+            "mensaje": "Contraseña actualizada correctamente"
+          }
+        },
+        
+        "eliminar": {
+          "method": "PUT",  // soft delete
+          "path": "/api/usuarios/perfil/delete",
+          "descripcion": "Eliminar cuenta (soft delete - desactivar)",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "body": {
+            "password": "MiPassword123!"  // confirmación
+          },
+          "respuesta": {
+            "mensaje": "Usuario desactivado correctamente"
+          }
+        },
+        
+        "reactivar": {
+          "method": "PUT",
+          "path": "/api/usuarios/perfil/reactivar",
+          "descripcion": "Reactivar cuenta desactivada",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "mensaje": "Usuario reactivado correctamente",
+            "is_active": true
+          }
+        },
+        
+        "logout": {
+          "method": "POST",
+          "path": "/api/usuarios/logout",
+          "descripcion": "Cerrar sesión (invalidar token)",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "mensaje": "Sesión cerrada correctamente"
+          }
+        }
+      },
+      
+      "imagenes_perfil": {
+        "subir_avatar": {
+          "method": "POST",
+          "path": "/api/usuarios/perfil/avatar",
+          "descripcion": "Subir avatar de perfil",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "body": {
+            "form_data": {
+              "imagen": "[Binary File]",  // archivo de imagen
+              "nombre": "Mi avatar"  // opcional: texto alternativo
+              // tipo: backend asigna "avatar" automáticamente
+            }
+          },
+          "respuesta": {
+            "id": 1,
+            "url_image": "https://cloudflare-r2/avatars/user1_avatar.webp",
+            "tipo": "avatar",
+            "nombre": "Mi avatar",
+            "is_active": true,
+            "mime_type": "image/webp",
+            "tamano_bytes": 245760,
+            "ancho": 500,
+            "alto": 500
+          }
+        },
+        
+        "subir_portada": {
+          "method": "POST",
+          "path": "/api/usuarios/perfil/portada",
+          "descripcion": "Subir imagen de portada de perfil",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "body": {
+            "form_data": {
+              "imagen": "[Binary File]",
+              "nombre": "Mi portada"
+            }
+          },
+          "respuesta": {
+            "id": 2,
+            "url_image": "https://cloudflare-r2/portadas/user1_portada.webp",
+            "tipo": "portada",
+            "nombre": "Mi portada",
+            "is_active": true
+          }
+        },
+        
+        "obtener_imagenes": {
+          "method": "GET",
+          "path": "/api/usuarios/perfil/imagenes",
+          "descripcion": "Obtener todas las imágenes del perfil (avatar + portada)",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "avatar": {
+              "id": 1,
+              "url_image": "https://cloudflare-r2/avatars/user1_avatar.webp",
+              "nombre": "Mi avatar",
+              "is_active": true
+            },
+            "portada": {
+              "id": 2,
+              "url_image": "https://cloudflare-r2/portadas/user1_portada.webp",
+              "nombre": "Mi portada",
+              "is_active": true
+            }
+          }
+        },
+        
+        "eliminar_avatar": {
+          "method": "DELETE",
+          "path": "/api/usuarios/perfil/avatar",
+          "descripcion": "Eliminar avatar actual",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "mensaje": "Avatar eliminado correctamente"
+          }
+        },
+        
+        "eliminar_portada": {
+          "method": "DELETE",
+          "path": "/api/usuarios/perfil/portada",
+          "descripcion": "Eliminar portada actual",
+          "autenticacion": true,
+          "headers": {
+            "Authorization": "Bearer {token}"
+          },
+          "respuesta": {
+            "mensaje": "Portada eliminada correctamente"
+          }
+        }
+      }
+    }
+  }

@@ -1,0 +1,43 @@
+{
+    "libro_tipo": { // si o sí antes del libro
+      "nombre": "Novela" // Opciones: Comic, Manga, etc
+      // id: autogenerado por BD
+    },
+    "libro_estado": { // si o sí antes del libro
+      "nombre": "Finalizado" // Opciones: "Publicando", "En proceso", "Finalizado", "Suspendido"
+      // id: autogenerado por BD
+    },
+    "libro": {
+      "titulo": "El nombre del viento",
+      "slug": "el-nombre-del-viento",  // frontend/backend: se genera automáticamente desde el título
+      "sinopsis": "Kvothe, un héroe legendario...", // opcional: pero necesario
+      "tipo_id": 1,  // frontend: seleccionado de libro_tipo
+      "estado_id": 3,  // frontend: seleccionado de libro_estado, default publicando
+      "publicacion": "2007-03-27",  // frontend: fecha de publicación del libro
+      "visibilidad": true  // frontend: opcional (default true)
+      // id: autogenerado por BD
+      // updated_at, created_at: automáticos por BD
+    },
+    "imagen_libro": {
+      "libro_id": 1,  // backend: después de crear el libro
+      "url_image": "https://cloudflare-r2/libros/portada-el-nombre-del-viento.webp",
+      // url_image: backend -> sube a R2 -> guarda en BD
+      "tipo": "portada",  // frontend: según uso ("portada", "banner", "galeria")
+      "nombre": "Portada original de El nombre del viento",  // frontend: texto alternativo
+      "is_active": true,  // backend: true si es la portada principal
+      "mime_type": "image/webp",  // backend: extrae del archivo
+      "tamano_bytes": 524288,     // backend: extrae del archivo (500KB)
+      "ancho": 800,               // backend: procesa imagen (opcional)
+      "alto": 1200               // backend: procesa imagen (opcional)
+      // id: autogenerado por BD
+      // created_at, updated_at: automáticos por BD
+    },
+    "nombre_alternativo": {
+      "libro_id": 1,  // backend: después de crear el libro
+      "codigo": "en",  // frontend: código de idioma (es, en, etc.)
+      "nombre": "The Name of the Wind",  // frontend: nombre alternativo del libro
+      "is_original": true  // frontend: true si es el nombre original (inglés)
+      // id: autogenerado por BD
+    }
+}
+

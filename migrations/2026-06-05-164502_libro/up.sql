@@ -9,7 +9,7 @@ CREATE TABLE libro_estado (
 CREATE TABLE libro (
   id SERIAL PRIMARY KEY,
   titulo VARCHAR(150) NOT NULL,
-  slug VARCHAR(255) NOT NULL UNIQUE, -- identificador legible y único utilizado como parte de una URL.
+  slug VARCHAR(255) NOT NULL UNIQUE, -- identificador legible y único utilizado para la URL.
   sinopsis TEXT,
   tipo_id INTEGER NOT NULL,  -- Novela, Comic, Manga, etc.
   publicacion DATE NOT NULL,  -- fecha de publicación del libro.
@@ -40,7 +40,7 @@ CREATE TABLE imagen_libro (
 CREATE TABLE nombre_alternativo ( -- sobre todos los nombres conocidos de una obra
   id SERIAL PRIMARY KEY,
   libro_id INT NOT NULL,
-  codigo VARCHAR(12) NOT NULL,  -- modificable el n° varchar
+  codigo VARCHAR(12) NOT NULL,  -- modificable el n° varchar (pais)
   nombre TEXT NOT NULL, -- algunos nombres literalmente ponen la descripción aquí...
   is_original BOOLEAN NOT NULL DEFAULT FALSE, -- el nombre oficial y del idioma original
   CONSTRAINT fk_nombre_alternativo

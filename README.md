@@ -327,3 +327,35 @@ autor
 use crate::schema::libro::dsl::{id as id_libro, autor_id };
 use crate::schema::autor::dsl::{ id as id_autor};
 ```
+-----------------------
+# 📚 Documentación del Backend - Biblioteca
+
+## Índice
+
+### 📡 API
+- [**Especificación OpenAPI**](./api/openapi.yaml) - Definición formal de la API
+- [**Guía de Endpoints**](./api/endpoints.md) - Uso práctico de la API
+- [**Ejemplos**](./api/ejemplos/) - Requests/responses de ejemplo
+- [**Changelog**](./api/changelog.md) - Historial de cambios
+
+### 🗄️ Base de Datos
+- [**Esquema**](./database/schema.md) - Diagrama y estructura de tablas
+- [**Migraciones**](./database/migrations/README.md) - Guía de migraciones
+- [**Seeds**](./database/seeds/README.md) - Datos iniciales
+
+### 🏗️ Arquitectura
+- [**Diagrama**](./arquitectura/diagrama.md) - Arquitectura del sistema
+- [**Decisiones**](./arquitectura/decisiones.md) - Decisiones técnicas (ADR)
+- [**Tecnologías**](./arquitectura/tecnologias.md) - Stack tecnológico
+
+## 🚀 Desarrollo local
+
+```bash
+# Levantar el servidor
+cargo run
+
+# Ejecutar migraciones
+diesel migration run
+
+# Correr tests
+cargo test

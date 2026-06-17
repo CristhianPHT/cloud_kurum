@@ -58,4 +58,63 @@ Backend (Rust + Actix + Diesel)
 │   └── handlers/           (rutas Actix, orquesta todo api)
 ├── lib.rs                  (módulos, crate)
 └── schema.rs               (Diesel automático)
-
+--------------------------------------------------
+usuario	soft delete + auditoría
+libro	soft delete
+capitulo	soft delete
+autor	soft delete
+genero	delete físico
+etiqueta	delete físico
+lectura	depende del negocio
+--------------------------------------------------
+{
+  "pasos_desarrollo": [
+    {
+      "paso": 1,
+      "nombre": "Diseño de Base de Datos",
+      "estado": "✅ COMPLETADO",
+      "entregable": "Tablas SQL (usuario, imagen_perfil, libro, etc.)"
+    },
+    {
+      "paso": 2,
+      "nombre": "Definición de contratos de datos",
+      "estado": "✅ COMPLETADO", 
+      "entregable": "JSON con estructura de datos (el que acabas de hacer)"
+    },
+    {
+      "paso": 3,
+      "nombre": "Backend - API Endpoints",
+      "estado": "⏳ EN PROGRESO",
+      "tareas": [
+        "CRUD para libro_tipo y libro_estado (tablas catálogo)",
+        "CRUD para libro (crear, leer, actualizar, eliminar)",
+        "Endpoint para subir imágenes a Cloudflare R2",
+        "CRUD para nombre_alternativo",
+        "Validaciones de datos",
+        "Generación de slugs automática"
+      ]
+    },
+    {
+      "paso": 4,
+      "nombre": "Backend - Lógica de negocio",
+      "estado": "📋 PENDIENTE",
+      "tareas": [
+        "Procesamiento de imágenes (dimensiones, mime_type, tamaño)",
+        "Manejo de portada activa (solo una por libro)",
+        "Generación de slugs únicos",
+        "Manejo de errores y validaciones"
+      ]
+    },
+    {
+      "paso": 5,
+      "nombre": "Frontend - Consumo de API",
+      "estado": "📋 PENDIENTE",
+      "tareas": [
+        "Formularios para crear/editar libros",
+        "Subida de imágenes con preview",
+        "Manejo de nombres alternativos",
+        "Slug automático desde título"
+      ]
+    }
+  ]
+}

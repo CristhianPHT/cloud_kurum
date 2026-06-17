@@ -1,0 +1,24 @@
+{
+    "usuario": {
+        "nickname": "tech_lover",
+        "username": "tecnologico2024",
+        "password_hash": "$2b$12$fdsaf3",
+        "email": "usuario@ejemplo.com"
+        // extra: id (autogenerado)
+        // backend: is_active, updated_at, created_at (automáticos)
+    },
+    "imagen_perfil": {
+        "user_id": 1,   // frontend, sesión
+        "url_image": "https://cloudflare-r2/avatars/lovers.webp",
+        // url_image: backend -> r2 -> backend
+        "tipo": "avatar",   // frontend: automático
+        "nombre": "Avatar tecnológico",  // frontend: manual
+        "is_active": true,  // backend: manual, verificación
+        "mime_type": "image/webp",  // backend: extrae del archivo
+        "tamano_bytes": 245760, // backend: extrae del archivo
+        "ancho": 500,   // opcional, backend: procesa imagen
+        "alto": 500    // opciona, backend: procesa imagen
+        // extra: id (autogenerado)
+        // backend: created_at, updated_at (automáticos)
+    }
+}
