@@ -12,7 +12,7 @@ CREATE TABLE libro (
   slug VARCHAR(255) NOT NULL UNIQUE, -- identificador legible y único utilizado para la URL.
   sinopsis TEXT,
   tipo_id INTEGER NOT NULL,  -- Novela, Comic, Manga, etc.
-  publicacion DATE NOT NULL,  -- fecha de publicación del libro.
+  publicacion DATE NOT NULL,  -- fecha de publicación del libro.o
   estado_id INTEGER NOT NULL,  -- "Publicando", "En proceso", "Finalizado", "Suspendido", etc.
   visibilidad BOOLEAN DEFAULT TRUE, -- útil para libros privados o públicos.
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- fecha de actualización del libro.
@@ -48,3 +48,8 @@ CREATE TABLE nombre_alternativo ( -- sobre todos los nombres conocidos de una ob
     REFERENCES libro(id)
     ON DELETE CASCADE
 );
+
+-- CREATE TABLE pais_origen_id {
+-- dónde ingresarán los campos sobre libro y paises para tener el origen del libro
+-- Otra cosa también seŕia añadir otra tabla para ¿editoriales?
+-- }

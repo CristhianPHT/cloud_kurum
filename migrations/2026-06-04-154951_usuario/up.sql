@@ -30,7 +30,7 @@ CREATE TABLE imagen_perfil (
 CREATE TABLE auth_tokens (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL,
-  token TEXT NOT NULL,
+  token TEXT NOT NULL,  -- UNIQUE falta...?
   dispositivo TEXT,
   expira TIMESTAMP NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT true,
