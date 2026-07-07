@@ -11,7 +11,7 @@ use serde_json::json;
 use crate::infrastructure::db::establish_connection;
 use crate::repositories::select_books_by_user_images;
 
-#[get("/me/libros")]
+#[get("/me/books")]
 pub async fn get_all_books_user(req: HttpRequest) -> impl Responder {
   let user_id = match get_user_id_from_token(&req) {
     Ok(id) => id,
@@ -25,7 +25,7 @@ pub async fn get_all_books_user(req: HttpRequest) -> impl Responder {
   }
 }
 
-#[get("/me/sufle_libro")] // Select username,perfil,nickname from Account = select_id_usuario = sacamos data minima por id
+#[get("/me/sufle_books")] // Select username,perfil,nickname from Account = select_id_usuario = sacamos data minima por id
 pub async fn get_books_x_user(req: HttpRequest) -> impl Responder { //  id_usuario: web::Path<i32>
   let user_id = match get_user_id_from_token(&req) {
     Ok(id) => id,
@@ -42,7 +42,7 @@ pub async fn get_books_x_user(req: HttpRequest) -> impl Responder { //  id_usuar
   }
 }
 
-#[post("/me/libros")]
+#[post("/me/books_by_user")]
 pub async fn post_books_x_user(param: web::Json<NuevoLibroUsuario>) -> impl Responder {  // req: HttpRequest
   let mut conn = establish_connection();
   let nuevo_librito = param.into_inner();
@@ -52,9 +52,9 @@ pub async fn post_books_x_user(param: web::Json<NuevoLibroUsuario>) -> impl Resp
   }
 }
 
-#[get("/user/{username_link}/libros")]
-pub async fn get_libros_publicos_x_user(username_link: web::Path<String> ) -> impl Responder {
-  let usuariox = username_link.into_inner();
+#[get("/users/{nick_name}/books")]
+pub async fn get_libros_publicos_x_user(nick_name: web::Path<String> ) -> impl Responder {
+  let usuariox = nick_name.into_inner();
   let mut conn = establish_connection();
 
   match select_public_books_by_username(&mut conn, &usuariox) {
