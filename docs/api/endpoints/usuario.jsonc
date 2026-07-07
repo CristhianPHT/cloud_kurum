@@ -1,56 +1,135 @@
-{
-    "endpoints": {
-      "usuarios": {
-        "registrar": {
-          "method": "POST",
-          "path": "/api/usuarios/registrar",
-          "descripcion": "Registrar nuevo usuario",
-          "autenticacion": false,
-          "body": {
-            "nickname": "tech_lover",  // opcional: si no se envía, se genera automático
-            "username": "tecnologico2024",
-            "password": "MiPassword123!",  // frontend: en texto plano, backend hashea
-            "email": "usuario@ejemplo.com"
-            // is_active: backend asigna true por defecto
-          },
-          "respuesta": {
-            "id": 1,
+{     // con body (cómo ingresar datos)
+  "endpoints": {
+    "usuarios": {
+      "registrar": {
+        "method": "POST",
+        "path": "/api/users/register",
+        "descripcion": "Registrar nuevo usuario",
+        "autenticacion": false,
+        "body": {
+          "nickname": "tech_lover",  // opcional: si no se envía, se genera automático
+          "username": "tecnologico2024",
+          "password": "MiPassword123!",  // frontend: en texto plano, backend hashea
+          "email": "usuario@ejemplo.com"
+        },
+        "respuesta": {
+          "id": 1,
+          "nickname": "tech_lover",
+          "username": "tecnologico2024",
+          "email": "usuario@ejemplo.com",
+          "is_active": true,
+          "created_at": "2024-01-15T10:30:00Z"
+        }
+      },
+      
+      "login": {
+        "method": "POST",
+        "path": "/api/users/login",
+        "descripcion": "Iniciar sesión (retorna JWT)",
+        "autenticacion": false,
+        "body": {
+          "username": "usuario@ejemplo.com",
+          "password": "MiPassword123!"
+        },
+        "respuesta": {
+          "token": "eyJhbGciOiJIUzI1NiIs...",
+          "usuario": {
             "nickname": "tech_lover",
-            "username": "tecnologico2024",
-            "email": "usuario@ejemplo.com",
-            "is_active": true,
-            "created_at": "2024-01-15T10:30:00Z"
+            "foto_perfil": "https://image/usuario01/cloudflare/xx1"
           }
+        }
+      },
+      "perfil_publico": {
+        "method": "GET",
+        "path": "/api/users/:nickname",
+        "descripcion": "Obtener perfil público del usuario",
+          "autenticacion": false
+      },
+      "perfil_privado": {
+        "method": "GET",
+        "path": "/me",
+        "descripcion": "Obtener todo el perfil privado del usuario",
+        "autenticacion": true,
+        "headers": { "Authorization": "Bearer {token}" },
+        "respuesta": {
+          "nickname": "Kurumi",
+          "username": "kurumi",
+          "url_image": "https://..."
+          // toda la info del usuario
         },
-        
-        "login": {
-          "method": "POST",
-          "path": "/api/usuarios/login",
-          "descripcion": "Iniciar sesión (retorna JWT)",
-          "autenticacion": false,
-          "body": {
-            "email": "usuario@ejemplo.com",
-            "password": "MiPassword123!"
-          },
-          "respuesta": {
-            "token": "eyJhbGciOiJIUzI1NiIs...",
-            "usuario": {
-              "id": 1,
-              "nickname": "tech_lover",
-              "username": "tecnologico2024",
-              "email": "usuario@ejemplo.com"
-            }
-          }
+        "errores": {
+          "401": "No autenticado.",
+          "404": "Cuenta no encontrada.",
+          "500": "Error interno del servidor."
+        }
+      },
+      "header": {
+      "method": "GET",
+      "path": "/me/header",
+        "descripcion": "Obtiene la información necesaria para mostrar el encabezado (header) de la cuenta autenticada.",
+        "autenticacion": true,
+        "headers": { "Authorization": "Bearer {token}" },
+        "respuesta": {
+          "nickname": "Kurumi",
+          "url_image": "https://..."
         },
-        
-        "perfil": {
-          "method": "GET",
-          "path": "/api/usuarios/perfil",
-          "descripcion": "Obtener perfil del usuario autenticado",
-          "autenticacion": true,
-          "headers": {
-            "Authorization": "Bearer {token}"
-          },
+        "errores": {
+          "401": "No autenticado.",
+          "404": "Cuenta no encontrada.",
+          "500": "Error interno del servidor."
+        }
+      },
+      "password": {
+        "method": "PUT",
+        "path": "/me/password",
+        "descripcion": "Cambia la contraseña de la cuenta autenticada.",
+        "autenticacion": true,
+        "request": {
+          "old_password": "MiContraseñaActual123",
+          "new_password": "MiNuevaContraseña456"
+        },
+        "respuesta": {
+          "message": "Contraseña actualizada correctamente."
+        },
+        "errores": {
+          // "400": "Datos inválidos.",
+          // "401": "No autenticado.",
+          // "403": "La contraseña actual es incorrecta.",
+          // "500": "Error interno del servidor."
+        }
+      },
+      "logout": {
+        "method": "POST",
+        "path": "/me/logout",
+        "descripcion": "Cerrar sesión (invalidar token)",
+        "autenticacion": true,
+        "headers": { "Authorization": "Bearer {token}" },
+        "respuesta": {
+          "mensaje": "Sesión cerrada correctamente"
+        }
+      },
+      "nickname": {
+        "method": "PUT",
+        "path": "/me/nickname",
+        "descripcion": "Cambiar el apodo del usuario.",
+        "autenticacion": true,
+        "headers": { "Authorization": "Bearer {token}"},
+        "body":{
+          "nickname": "new_nickname"
+        },
+        "respuesta": "Apodo actualizado correctamente."
+      },
+
+
+// --------------------------------------------------------------------------------------------------------
+      "perfil": {
+        "method": "GET",
+        "path": "/api/me/portada-avatar",
+        "descripcion": "Obtener perfil del usuario autenticado",
+        "autenticacion": true,
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
           "respuesta": {
             "id": 1,
             "nickname": "tech_lover",
@@ -61,46 +140,6 @@
             "updated_at": "2024-01-15T10:30:00Z"
           }
         },
-        
-        "actualizar": {
-          "method": "PUT",
-          "path": "/api/usuarios/perfil",
-          "descripcion": "Actualizar perfil del usuario autenticado",
-          "autenticacion": true,
-          "headers": {
-            "Authorization": "Bearer {token}"
-          },
-          "body": {
-            "nickname": "tech_lover_actualizado",  // opcional
-            "username": "tecnologico2025",  // opcional
-            "email": "nuevo@ejemplo.com"  // opcional
-          },
-          "respuesta": {
-            "id": 1,
-            "nickname": "tech_lover_actualizado",
-            "username": "tecnologico2025",
-            "email": "nuevo@ejemplo.com",
-            "updated_at": "2024-01-16T14:20:00Z"
-          }
-        },
-        
-        "cambiar_password": {
-          "method": "PUT",
-          "path": "/api/usuarios/perfil/password",
-          "descripcion": "Cambiar contraseña del usuario autenticado",
-          "autenticacion": true,
-          "headers": {
-            "Authorization": "Bearer {token}"
-          },
-          "body": {
-            "password_actual": "MiPassword123!",
-            "password_nueva": "NuevaPassword456!"
-          },
-          "respuesta": {
-            "mensaje": "Contraseña actualizada correctamente"
-          }
-        },
-        
         "eliminar": {
           "method": "PUT",  // soft delete
           "path": "/api/usuarios/perfil/delete",
@@ -128,19 +167,6 @@
           "respuesta": {
             "mensaje": "Usuario reactivado correctamente",
             "is_active": true
-          }
-        },
-        
-        "logout": {
-          "method": "POST",
-          "path": "/api/usuarios/logout",
-          "descripcion": "Cerrar sesión (invalidar token)",
-          "autenticacion": true,
-          "headers": {
-            "Authorization": "Bearer {token}"
-          },
-          "respuesta": {
-            "mensaje": "Sesión cerrada correctamente"
           }
         }
       },
@@ -249,3 +275,27 @@
       }
     }
   }
+
+  // {
+  //   "id": 1,
+  //   "nickname": "tech_lover",
+  //   "username": "tecnologico2024",
+  //   "email": "usuario@ejemplo.com",
+  //   "avatar": "https://cloudflare-r2/avatars/lovers.webp",
+  //   "portada": "https://cloudflare-r2/portadas/lovers_portada.webp",
+  //   "bio": "Amante de la tecnología y los libros",
+  //   "is_active": true,
+  //   "created_at": "2024-01-15T10:30:00Z",
+  //   "updated_at": "2024-01-16T14:20:00Z",
+  //   "preferencias": {
+  //     "tema": "oscuro",
+  //     "idioma": "es",
+  //     "notificaciones": true
+  //   },
+  //   "estadisticas": {
+  //     "libros_publicados": 12,
+  //     "seguidores": 45,
+  //     "siguiendo": 23
+  //   }
+  //   // ... más datos pesados
+  // }
