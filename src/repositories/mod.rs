@@ -1,3 +1,4 @@
+// Repositori: Acceso a base de datos.
 pub mod account;
 pub mod auth;
 pub mod database;

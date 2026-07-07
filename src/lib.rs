@@ -7,15 +7,14 @@ pub mod schema;
 pub mod utils;
 pub mod handlers;
 pub mod web {
-    pub mod basic;
     pub mod interface;
     pub mod auth;
     pub mod handlers;
     pub mod dto;
+    pub mod errors;
 }
 
 // Re-exportar las funciones más utilizadas para mantener compatibilidad
-// pub use modules::database::establish_connection;
 pub use infrastructure::db::establish_connection;
 
 // Re-exportar funciones por categoría
@@ -24,10 +23,10 @@ pub use infrastructure::db::establish_connection;
 // }
 
 pub mod account {
-    pub use crate::services::account::{register_user, login_usuario_hashed, update_login};
+    pub use crate::services::account::{register_user, login_user_service, update_login};
     pub use crate::repositories::account::{
         login_usuario_hashed_old, select_usuario_por_nickname,
-        select_usuario_por_id, username_existe, select_header_by_id};
+        select_usuario_por_id, username_existe, select_me_header};
 }
 
 pub mod auth {
@@ -52,10 +51,10 @@ pub mod relaciones {
 }
 
 // Re-exportar funciones principales para mantener compatibilidad con código existente
-pub use services::account::{register_user, login_usuario_hashed, update_login};
+pub use services::account::{register_user, login_user_service, update_login};
 pub use repositories::account::{
     insert_usuario, select_usuario_por_nickname, select_usuario_por_id,
-    username_existe,select_header_by_id
+    username_existe,select_me_header
 };
 pub use repositories::auth::{insert_auth_token, select_id_token};
 pub use services::auth::{calculate_expiration, generate_jwt};

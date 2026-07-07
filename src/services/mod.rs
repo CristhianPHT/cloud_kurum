@@ -1,3 +1,4 @@
+// Service: Lógica de negocio.
 pub mod service;
 pub mod account;
 pub mod auth;

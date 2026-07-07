@@ -1,7 +1,7 @@
 
 
-use crate::models::{RelationLibroUsuario, NuevoLibroUsuario, NiceAccount, ImagenLibro, Libro};   // AllLibroxUsuario
-use crate::schema::usuario::dsl::{usuario, username};
+use crate::models::{NuevoLibroUsuario, ImagenLibro, Libro};   // AllLibroxUsuario, RelationLibroUsuario, NiceAccount, 
+use crate::schema::usuario::dsl::{usuario, nickname}; // , id as account_id
 use crate::schema::libro::dsl::{libro, visibilidad};
 use crate::schema::usuario_libro::dsl::{usuario_id, id as id_usuario_libro, usuario_libro};
 use diesel::dsl::insert_into;
@@ -13,18 +13,26 @@ pub fn insert_libro_usuario(conn: &mut PgConnection, modelo: NuevoLibroUsuario) 
     .returning(id_usuario_libro)
     .get_result(conn)
 }
-
-pub fn select_public_books_by_username(conn: &mut PgConnection, nombre_usuario: &str) -> QueryResult<Vec<Libro>> {    // Seleccionar los libros públicos para mostrarlos, para todos
-  let user = usuario  // user = select * from where username=? limit 1;
-    .filter(username.eq(nombre_usuario))
-    .first::<NiceAccount>(conn)?;
-  RelationLibroUsuario::belonging_to(&user) //select * from libro ...
-    .inner_join(libro)
+pub fn select_public_books_by_username(conn: &mut PgConnection, nick_name: &str) -> QueryResult<Vec<Libro>> {
+  usuario
+    .filter(nickname.eq(nick_name))
+    .inner_join(usuario_libro.inner_join(libro))
     .filter(visibilidad.eq(Some(true)))
     .select(Libro::as_select())
-    .load::<Libro>(conn)
-  // user equivale 1 consulta, y belonging_to equivale a otra consulta, terminando en 2 consultas
+    .load(conn)
 }
+  // pub fn select_public_books_by_username_old(conn: &mut PgConnection, nick_name: &str) -> QueryResult<Vec<Libro>> {    // Seleccionar los libros públicos para mostrarlos, para todos
+//   let user = usuario  // user = select * from where nickname=? limit 1;
+//     .filter(nickname.eq(nick_name))
+//     .select(account_id)
+//     .first::<NiceAccount>(conn)?;
+//   RelationLibroUsuario::belonging_to(&user) //select * from libro ...
+//     .inner_join(libro)
+//     .filter(visibilidad.eq(Some(true)))
+//     .select(Libro::as_select())
+//     .load::<Libro>(conn)
+// user equivale 1 consulta, y belonging_to equivale a otra consulta, terminando en 2 consultas
+// }
 
 pub fn select_all_books_by_user( conn: &mut PgConnection, user_id: i32 ) -> QueryResult<Vec<Libro>> {
   usuario_libro

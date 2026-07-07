@@ -9,7 +9,7 @@ use chrono::NaiveDateTime;    // O NaiveDateTime si usas timestamps con zona hor
 #[derive(Queryable, Serialize, Debug, Deserialize)]
 #[diesel(table_name = usuario)]
 pub struct LoginAccount {   // Logearse legalmente como usuario (post)
-    pub id: Option<i32>,
+    // pub id: Option<i32>,
     pub username: String,
     pub password: String,
 }
