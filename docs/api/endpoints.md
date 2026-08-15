@@ -103,3 +103,14 @@ falta arriba endpoint (ennumerados)
 | 🧩 | GET    | /me/sufle_books           | v1.0    | 🔒   | Todos los libros con imagen del usuario           |
 | 🧩 | POST   | /books                    | v1.0    | 🔒   | Subir un libro                                    |
 | 🧩 | POST   | /me/books_by_user         | v1.0    | 🔒   | Crea relación entre libro y usuario (transacción) |
+| -- | ------ | ---------------------------- | ------- | ---- | -------------------------------------------- |
+| 🧩 | POST   | /books/tipe                | v1.0    | ❌    | Crear un nuevo tipo de libro                 |
+| 🧩 | GET    | /books/tipe/{id}           | v1.0    | ❌    | Obtener un tipo de libro por ID              |
+| 🧩 | GET    | /books/tipe/all/{pagina}   | v1.0    | ❌    | Obtener todos los tipos de libro paginados   |
+| 🧩 | PUT    | /books/tipe/{id}           | v1.0    | ❌    | Actualizar un tipo de libro por ID           |
+| 🧩 | DELETE | /books/tipe/{id}           | v1.0    | ❌    | Eliminar un tipo de libro por ID             |
+| 🧩 | POST   | /books/state...            | v1.0    | ❌    | Crear un nuevo estado de libro               |
+| 🧩 | GET    | /books/estado/{id}         | v1.0    | ❌    | Obtener un estado de libro por ID            |
+| 🧩 | GET    | /books/estado/all/{pagina} | v1.0    | ❌    | Obtener todos los estados de libro paginados |
+| 🧩 | PUT    | /books/estado/{id}         | v1.0    | ❌    | Actualizar un estado de libro por ID         |
+| 🧩 | DELETE | /books/estado/{id}         | v1.0    | ❌    | Eliminar un estado de libro por ID           |

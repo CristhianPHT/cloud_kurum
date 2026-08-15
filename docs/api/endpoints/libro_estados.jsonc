@@ -1,0 +1,220 @@
+{
+  "libro_tipo": {
+    "crear": {
+      "method": "POST",
+      "path": "/books/tipe",
+      "descripcion": "Crear un nuevo tipo de libro.",
+      "autenticacion": true,
+      "body": {
+        "nombre": "Nombre del tipo de libro."
+      },
+      "respuesta": {
+        "200": {
+          "libro tipo id": "ID del tipo de libro creado."
+        }
+      },
+      "errores": {
+        "404": "Recurso no encontrado.",
+        "500": "Error interno al crear el tipo de libro."
+      }
+    },
+
+    "obtener": {
+      "method": "GET",
+      "path": "/books/tipe/{id}",
+      "descripcion": "Obtener un tipo de libro específico mediante su ID.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del tipo de libro."
+      },
+      "respuesta": {
+        "200": {
+          "data": {
+            "id": "ID del tipo de libro.",
+            "nombre": "Nombre del tipo de libro."
+          }
+        }
+      },
+      "errores": {
+        "404": "Tipo de libro no encontrado.",
+        "500": "Error interno al obtener el tipo de libro."
+      }
+    },
+
+    "obtener_todos": {
+      "method": "GET",
+      "path": "/books/tipe/all/{pagina}",
+      "descripcion": "Obtener los tipos de libro mediante paginación. Utiliza 10 registros por página y orden descendente por ID.",
+      "autenticacion": true,
+      "params": {
+        "pagina": "N°, número de página. El mínimo permitido es 1."
+      },
+      "respuesta": {
+        "200": {
+          "Libro tipos": [
+            {
+              "id": "ID del tipo de libro.",
+              "nombre": "Nombre del tipo de libro."
+            }
+          ]
+        }
+      },
+      "errores": {
+        "404": "No se encontraron tipos de libro.",
+        "500": "Error interno al obtener los tipos de libro."
+      }
+    },
+
+    "actualizar": {
+      "method": "PUT",
+      "path": "/books/tipe/{id}",
+      "descripcion": "Actualizar el nombre de un tipo de libro existente.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del tipo de libro."
+      },
+      "body": {
+        "nombre": "Nuevo nombre del tipo de libro."
+      },
+      "respuesta": {
+        "200": {
+          "Nombre actual": {
+            "id": "ID del tipo de libro.",
+            "nombre": "Nombre actualizado."
+          }
+        }
+      },
+      "errores": {
+        "404": "Tipo de libro no encontrado.",
+        "500": "Error interno al actualizar el tipo de libro."
+      }
+    },
+
+    "eliminar": {
+      "method": "DELETE",
+      "path": "/books/tipe/{id}",
+      "descripcion": "Eliminar un tipo de libro mediante su ID.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del tipo de libro."
+      },
+      "respuesta": {
+        "200": {}
+      },
+      "errores": {
+        "404": "Tipo de libro no encontrado.",
+        "500": "Error interno al eliminar el tipo de libro."
+      }
+    }
+  },
+
+  "libro_estado": {
+    "crear": {
+      "method": "POST",
+      "path": "/books/estado",
+      "descripcion": "Crear un nuevo estado de libro.",
+      "autenticacion": true,
+      "body": {
+        "nombre": "Nombre del estado."
+      },
+      "respuesta": {
+        "200": {
+          "libro estado id": "ID del estado de libro creado."
+        }
+      },
+      "errores": {
+        "404": "Recurso no encontrado.",
+        "500": "Error interno al crear el estado de libro."
+      }
+    },
+
+    "obtener": {
+      "method": "GET",
+      "path": "/books/estado/{id}",
+      "descripcion": "Obtener un estado de libro específico mediante su ID.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del estado de libro."
+      },
+      "respuesta": {
+        "200": {
+          "data": {
+            "id": "ID del estado de libro.",
+            "nombre": "Nombre del estado de libro."
+          }
+        }
+      },
+      "errores": {
+        "404": "Estado de libro no encontrado.",
+        "500": "Error interno al obtener el estado de libro."
+      }
+    },
+
+    "obtener_todos": {
+      "method": "GET",
+      "path": "/books/estado/all/{pagina}",
+      "descripcion": "Obtener los estados de libro mediante paginación. Utiliza 10 registros por página y orden descendente por ID.",
+      "autenticacion": true,
+      "params": {
+        "pagina": "N°, número de página. El mínimo permitido es 1."
+      },
+      "respuesta": {
+        "200": {
+          "libro estados": [
+            {
+              "id": "ID del estado de libro.",
+              "nombre": "Nombre del estado de libro."
+            }
+          ]
+        }
+      },
+      "errores": {
+        "404": "No se encontraron estados de libro.",
+        "500": "Error interno al obtener los estados de libro."
+      }
+    },
+
+    "actualizar": {
+      "method": "PUT",
+      "path": "/books/estado/{id}",
+      "descripcion": "Actualizar el nombre de un estado de libro existente.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del estado de libro."
+      },
+      "body": {
+        "nombre": "Nuevo nombre del estado de libro."
+      },
+      "respuesta": {
+        "200": {
+          "estado actual": {
+            "id": "ID del estado de libro.",
+            "nombre": "Nombre actualizado."
+          }
+        }
+      },
+      "errores": {
+        "404": "Estado de libro no encontrado.",
+        "500": "Error interno al actualizar el estado de libro."
+      }
+    },
+
+    "eliminar": {
+      "method": "DELETE",
+      "path": "/books/estado/{id}",
+      "descripcion": "Eliminar un estado de libro mediante su ID.",
+      "autenticacion": true,
+      "params": {
+        "id": "N°, ID del estado de libro."
+      },
+      "respuesta": {
+        "200": {}
+      },
+      "errores": {
+        "404": "Estado de libro no encontrado.",
+        "500": "Error interno al eliminar el estado de libro."
+      }
+    }
+  }
+}
+

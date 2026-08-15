@@ -1,5 +1,6 @@
-use crate::models::{NuevoAccount, HeaderAccount};
-use crate::schema::usuario::dsl::{id as account_id, password_hash, username, usuario, nickname, updated_at};
+use crate::models::{NuevoAccount};
+use crate::web::dto::account::{HeaderAccount, Account};
+use crate::schema::usuario::dsl::{id as account_id, password_hash, username, usuario, nickname, updated_at, email};
 use crate::schema::imagen_perfil::dsl::{imagen_perfil as perfil_acc, user_id as fk_image, url_image};
 use diesel::dsl::{insert_into, update};
 use diesel::prelude::*;
@@ -27,7 +28,7 @@ pub fn select_usuario_por_nickname(conn: &mut PgConnection, nick_name: &str) -> 
     .first::<HeaderAccount>(conn)
 }
 
-pub fn select_usuario_por_id( conn: &mut PgConnection, usuario_id: i32 ) -> QueryResult<HeaderAccount> { // select_usuario_por_id, futura versión name?
+pub fn select_usuario_por_id( conn: &mut PgConnection, usuario_id: i32 ) -> QueryResult<Account> { // select_usuario_por_id, futura versión name?
   usuario
     .left_join(
       perfil_acc.on(
@@ -37,10 +38,11 @@ pub fn select_usuario_por_id( conn: &mut PgConnection, usuario_id: i32 ) -> Quer
     .filter(account_id.eq(usuario_id))
     .select((
       nickname,
-      // username,
+      username,
+      email,
       url_image.nullable(),
     ))
-    .first::<HeaderAccount>(conn)
+    .first::<Account>(conn)
 }
 // pub fn select_id_usuario(conn: &mut PgConnection, usuario_id: i32) -> QueryResult<Account> {
 //     diesel::query_dsl::methods::FindDsl::find(usuario, usuario_id)

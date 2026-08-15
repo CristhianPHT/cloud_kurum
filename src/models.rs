@@ -160,6 +160,7 @@ use crate::schema::libro;   // Biblioteca all
 pub struct LibroDashboard { // Dashboard de libros, para mostrar en la pagina principal
     pub id: i32,
     pub titulo: String,
+    pub slug: String,
     pub perfil: Option<String>,
 }
 
@@ -182,7 +183,7 @@ use chrono::NaiveDate;
 
 #[derive(Insertable, Deserialize, Serialize, Clone)]    // Insertable = Jamás usar id
 #[diesel(table_name = libro)]
-pub struct NuevoLibro {     // Struct para insertar datos en la base de datos (INSERT)
+pub struct InsertLibro {     // Struct para insertar datos en la base de datos (INSERT)
     pub titulo: String,
     pub slug: String,
     pub sinopsis: Option<String>,

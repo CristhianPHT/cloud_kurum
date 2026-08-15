@@ -6,7 +6,7 @@
         "path": "/books/:page",
         "descripcion": "Listar libros con filtros (paginación, búsqueda, tipo, estado)",
         "autenticacion": false,
-        "respuesta": {"lista": "lista1"}
+        "respuesta": "{ 'libros': {{id_libro: 1, 'titulo': 'title', 'url_image': 'link'}, {...}}"
       },
       "crear": {
         "method": "POST", 
@@ -21,24 +21,39 @@
           "publicacion": "Fecha de publicación del libro.",
           "estado_id": "N°, requiere ser creado antes que el libro.",
           "visibilidad": true  // por defecto: true
-          // el resto puede omitrse
+          // el resto puede omitirse
+        },
+        "respuesta": {
+          "libro_id": "ID"
         }
       },
       "obtener": {
         "method": "GET",
-        "path": "/api/libros/:slug",  // 👈 CAMBIO: usar slug en lugar de id para URLs amigables
-        "descripcion": "Obtener libro por slug (para SEO)"
-      },
-      "actualizar": {
-        "method": "PUT",
-        "path": "/api/libros/:id",  // 👈 usamos :id para actualizaciones internas
-        "descripcion": "Actualizar libro por ID"
-      },
-      "eliminar": {
-        "method": "PUT",  // DELETE lógico
-        "path": "/api/libros/delete/:id",  // 👈 usamos :id para operaciones internas
-        "descripcion": "Eliminar libro (lógico)"
+        "path": "/books/:slug",  // 👈 CAMBIO: usar slug en lugar de id para URLs amigables
+        "descripcion": "Obtener libro por slug (link)",
+        "autenticacion": false,
+        "param": ":slug",
+        "respuesta": {
+          "titulo": "Titulo Principal",
+          "slug": "titulo-principal",   // puede ser omitido, por defecto x titulo
+          "sinopsis": "Ingresar texto",
+          "tipo_id": "N°, requiere ser creado antes que el libro.",
+          "publicacion": "Fecha de publicación del libro.",
+          "estado_id": "N°, requiere ser creado antes que el libro.",
+          "visibilidad": true  // por defecto: true
+        }
       }
+
+      // "actualizar": {
+      //   "method": "PUT",
+      //   "path": "/books/:id",  // 👈 usamos :id para actualizaciones internas
+      //   "descripcion": "Actualizar libro por ID"
+      // },
+      // "eliminar": {
+      //   "method": "PUT",  // DELETE lógico
+      //   "path": "/books/delete/:id",  // 👈 usamos :id para operaciones internas
+      //   "descripcion": "Eliminar libro (lógico)"
+      // }
     },
   
   

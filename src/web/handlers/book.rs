@@ -7,15 +7,15 @@ use crate::infrastructure::db::establish_connection;
 // -----------------------------------------libros----------------------------------------------
 use crate::{select_nombre_libros};
 #[get("/books/{page}")]   // últimos 10 libros publicados (/api/books/{page})
-pub async fn get_libro_all() -> impl Responder {
+pub async fn get_libro_all(pagina: web::Path<i64>) -> impl Responder {
   let mut conn = establish_connection();
-  // let user_id = id.into_inner();
-  match select_nombre_libros(&mut conn) {
+  let pagina: i64 = pagina.into_inner();
+  match select_nombre_libros(&mut conn, pagina) {
     Ok(libros) => HttpResponse::Ok().json(json!({ "libros": libros })), // Vec<LibroDashboard>
     Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
   }
 }
-#[get("/books/{slug}")]   // quizá debería ser /books/{nickname}/{slug}?
+#[get("/book/{slug}")]   // quizá debería ser /books/{nickname}/{slug}?
 pub async fn get_libro_unique(slug: web::Path<String>) -> impl Responder {  // falta dto
   let mut conn = establish_connection();
   let libro_slug = slug.into_inner();
@@ -25,14 +25,17 @@ pub async fn get_libro_unique(slug: web::Path<String>) -> impl Responder {  // f
       .json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
   }
 }
-use crate::{insert_libro_nuevo};
-use crate::models::NuevoLibro;
+
+use crate::web::dto::book::NewBook;
+use crate::services::book::create_book_service;
+// use crate::services::book::create_book_service;
+
 #[post{"/books"}]
-pub async fn post_nuevo_libro(param: web::Json<NuevoLibro>) -> impl Responder {
+pub async fn post_nuevo_libro(param: web::Json<NewBook>) -> impl Responder {
   let mut conn = establish_connection();
   let nuevo_librito = param.into_inner();
-  match insert_libro_nuevo(&mut conn, nuevo_librito) {    // falta verificar si ya hay para no duplicados
-    Ok(id) => HttpResponse::Ok().json(json!({ "libro_id": id })), // QueryResult<i32>
+  match create_book_service(&mut conn, nuevo_librito) {    // falta verificar si ya hay para no duplicados
+    Ok(slug) => HttpResponse::Ok().json(json!({ "slug": slug })), // QueryResult<i32>
     Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error generar nuevos libros" })), // QueryResult<Error>
   }
 }

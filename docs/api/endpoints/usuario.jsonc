@@ -3,7 +3,7 @@
     "usuarios": {
       "registrar": {
         "method": "POST",
-        "path": "/api/users/register",
+        "path": "/users/register",
         "descripcion": "Registrar nuevo usuario",
         "autenticacion": false,
         "body": {

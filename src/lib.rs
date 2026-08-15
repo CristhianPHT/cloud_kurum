@@ -1,11 +1,12 @@
 // Módulos públicos para usarlo con name de package
 pub mod models;
-pub mod infrastructure;
-pub mod repositories;
-pub mod services;
-pub mod schema;
-pub mod utils;
 pub mod handlers;
+pub mod infrastructure;
+pub mod model;
+pub mod repositories;
+pub mod schema;
+pub mod services;
+pub mod utils;
 pub mod web {
     pub mod interface;
     pub mod auth;
