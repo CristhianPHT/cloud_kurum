@@ -42,3 +42,28 @@ pub fn select_libro_main(conn: &mut PgConnection, slug_as_id: String) -> QueryRe
     // .select(Libro::as_select())
     .first(conn)
 }
+
+use crate::web::dto::book::LibroDetalle;
+pub fn select_libro_detalle( conn: &mut PgConnection, libro_id: i32 ) -> QueryResult<LibroDetalle> {
+  use crate::schema::libro::dsl::{sinopsis, tipo_id, estado_id, publicacion, visibilidad};
+  use crate::schema::libro_tipo::dsl::{libro_tipo, id as libro_tipo_id, nombre as tipo_nombre};
+  use crate::schema::libro_estado::dsl as estado_dsl;
+
+  libro
+    .inner_join( libro_tipo.on(tipo_id.eq(libro_tipo_id)) )
+    .inner_join( estado_dsl::libro_estado.on(estado_id.eq(estado_dsl::id)) )
+    .filter(tipo_id.eq(libro_id))
+    .select((
+      id_libro,
+      titulo,
+      slug,
+      sinopsis,
+      tipo_id,
+      tipo_nombre,
+      estado_id,
+      estado_dsl::nombre,
+      publicacion,
+      visibilidad,
+    ))
+    .first::<LibroDetalle>(conn)
+}

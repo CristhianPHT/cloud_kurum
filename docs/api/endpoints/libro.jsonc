@@ -29,7 +29,7 @@
       },
       "obtener": {
         "method": "GET",
-        "path": "/books/:slug",  // 👈 CAMBIO: usar slug en lugar de id para URLs amigables
+        "path": "/book/:slug",  // 👈 CAMBIO: usar slug en lugar de id para URLs amigables
         "descripcion": "Obtener libro por slug (link)",
         "autenticacion": false,
         "param": ":slug",

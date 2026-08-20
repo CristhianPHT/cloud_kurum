@@ -15,11 +15,14 @@ pub async fn get_libro_all(pagina: web::Path<i64>) -> impl Responder {
     Err(_) => HttpResponse::InternalServerError().json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
   }
 }
+
+use crate::repositories::select_libro_detalle;
+// select_libro_main
 #[get("/book/{slug}")]   // quizá debería ser /books/{nickname}/{slug}?
-pub async fn get_libro_unique(slug: web::Path<String>) -> impl Responder {  // falta dto
+pub async fn get_libro_unique(slug: web::Path<i32>) -> impl Responder {  // falta dto
   let mut conn = establish_connection();
   let libro_slug = slug.into_inner();
-  match select_libro_main(&mut conn, libro_slug) {
+  match select_libro_detalle(&mut conn, libro_slug) {
     Ok(libro) => HttpResponse::Ok().json(json!({ "data": libro })), // Vec<LibroDashboard>
     Err(_) => HttpResponse::InternalServerError()
       .json(json!({ "error": "Error al obtener los libros" })), // Result<diesel::result::Error>
