@@ -1,4 +1,4 @@
-use crate::models::{Libro, LibroDashboard, InsertLibro};
+use crate::models::{LibroDashboard, InsertLibro};
 // use crate::schema::imagen_libro::dsl::{url_image, imagen_libro, libro_id};
 use crate::schema::libro::dsl::{id as id_libro, libro, titulo, slug};
 use diesel::dsl::insert_into;
@@ -36,11 +36,16 @@ pub fn insert_libro_nuevo(conn: &mut PgConnection, nuevo_libro: InsertLibro) -> 
     .get_result(conn)
 }
 
-pub fn select_libro_main(conn: &mut PgConnection, slug_as_id: String) -> QueryResult<Libro> {
+pub fn select_libro_main( conn: &mut PgConnection, libro_slug: String ) -> QueryResult<LibroDetalle> {
+  use crate::schema::libro::dsl::{sinopsis, tipo_id, estado_id, publicacion, visibilidad};
+  use crate::schema::libro_tipo::dsl::{ libro_tipo, id as libro_tipo_id, nombre as tipo_nombre};
+  use crate::schema::libro_estado::dsl as estado_dsl;
   libro
-    .filter(slug.eq(slug_as_id))
-    // .select(Libro::as_select())
-    .first(conn)
+    .inner_join( libro_tipo.on(tipo_id.eq(libro_tipo_id)) )
+    .inner_join( estado_dsl::libro_estado.on( estado_id.eq(estado_dsl::id) ) )
+    .filter(slug.eq(libro_slug))
+    .select(( id_libro, titulo, slug, sinopsis, tipo_id, tipo_nombre, estado_id, estado_dsl::nombre, publicacion, visibilidad))
+    .first::<LibroDetalle>(conn)
 }
 
 use crate::web::dto::book::LibroDetalle;

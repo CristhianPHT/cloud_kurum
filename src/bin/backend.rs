@@ -6,7 +6,7 @@ use nube_kurum::web::interface::{ post_nuevo_libro_genero};
 use nube_kurum::web::interface::{get_buscar_lib_gen,post_nuevo_genero}; //test
 use nube_kurum::web::handlers::user::{
   insert_login, login_usuario, get_user_page, get_header, get_user, new_password, actualizar_user, logout_sesion};
-use nube_kurum::web::handlers::book::{get_libro_all, get_libro_unique, post_nuevo_libro};
+use nube_kurum::web::handlers::book::{get_libro_all, get_libro_unique, post_nuevo_libro, get_libro_slug};
 use nube_kurum::web::handlers::books_state::{post_nuevo_lib_tip, get_lib_tip_unique, get_lib_tip_all, put_lib_tip, delete_lib_tip_web};
 use nube_kurum::web::handlers::books_state::{post_nuevo_lib_est, get_lib_est_unique, get_lib_est_all, put_lib_est, delete_lib_est_web};
 use nube_kurum::web::handlers::books_user::{get_all_books_user, get_books_x_user, post_books_x_user, get_libros_publicos_x_user};
@@ -28,8 +28,9 @@ async fn main() -> std::io::Result<()> {
       .service(logout_sesion)
       // --------------------libro--------------------
       .service(get_libro_all)  // Conseguir todos los libros, por página
-      .service(get_libro_unique)  // Conseguir un libro por slug
+      .service(get_libro_slug)  // Conseguir un libro por slug
       .service(post_nuevo_libro)  // Insertar un nuevo libro
+      .service(get_libro_unique)  // Conseguir un libro por slug
       // ----------------- libro tipo -----------------
       .service(post_nuevo_lib_tip)
       .service(get_lib_tip_unique)
