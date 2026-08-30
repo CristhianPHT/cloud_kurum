@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 // use serde_json::json;
 use actix_cors::Cors;  // Importa Cors para habilitar CORS en la aplicación
 use dotenv::dotenv;
@@ -12,12 +12,18 @@ use nube_kurum::web::handlers::books_state::{post_nuevo_lib_est, get_lib_est_uni
 use nube_kurum::web::handlers::books_user::{get_all_books_user, get_books_x_user, post_books_x_user, get_libros_publicos_x_user};
 // use nube_kurum::web::interface::{select_generica,insert_generica}; // no sirve por que es casi imposible genericos en orm de diesel
 
+use nube_kurum::infrastructure::r2::create_r2_client;
+use nube_kurum::web::handlers::image_r2::{test_r2};
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
   dotenv().ok();
+  let r2_client = create_r2_client();
   println!("Iniciando el servidor en http://127.0.0.1:5330/");
   HttpServer::new(move || {
     App::new()
+      .app_data(web::Data::new(r2_client.clone()))
+      .service(test_r2)
       .service(insert_login)  // Registro de usuario "/register" (post)
       .service(login_usuario)  // Iniciar sesión "/login" (post)  
       .service(get_user_page)   // Perfil público

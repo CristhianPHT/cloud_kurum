@@ -49,3 +49,4 @@ diesel-migrations = "2.1"
 dotenvy = "0.15"
 chrono = "0.4"
 uuid = { version = "1.0", features = ["v4"] }
+
