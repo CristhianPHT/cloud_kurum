@@ -20,7 +20,7 @@ pub fn create_r2_client() -> Client {
   );
 
   let config = aws_sdk_s3::Config::builder()
-    // .behavior_version_latest()
+    .behavior_version_latest()
     .region(Region::new("auto"))
     .endpoint_url(endpoint)
     .credentials_provider(credentials)

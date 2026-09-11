@@ -3,3 +3,4 @@
 // Basicamente Struct/models exclusivamente para web, definiendo lo necesario para ello
 pub mod account;
 pub mod book;
+pub mod image_r2;

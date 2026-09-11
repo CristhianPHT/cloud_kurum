@@ -13,7 +13,7 @@ use nube_kurum::web::handlers::books_user::{get_all_books_user, get_books_x_user
 // use nube_kurum::web::interface::{select_generica,insert_generica}; // no sirve por que es casi imposible genericos en orm de diesel
 
 use nube_kurum::infrastructure::r2::create_r2_client;
-use nube_kurum::web::handlers::image_r2::{test_r2};
+use nube_kurum::web::handlers::image_r2::{test_r2, test_upload_url, create_upload};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -22,8 +22,12 @@ async fn main() -> std::io::Result<()> {
   println!("Iniciando el servidor en http://127.0.0.1:5330/");
   HttpServer::new(move || {
     App::new()
+      // --------------- image r2 -------------------
+      .service(create_upload)
       .app_data(web::Data::new(r2_client.clone()))
       .service(test_r2)
+      .service(test_upload_url)
+      // --------------- user -------------------
       .service(insert_login)  // Registro de usuario "/register" (post)
       .service(login_usuario)  // Iniciar sesión "/login" (post)  
       .service(get_user_page)   // Perfil público
