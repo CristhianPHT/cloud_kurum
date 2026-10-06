@@ -53,10 +53,33 @@ pub async fn test_r2( r2: web::Data<aws_sdk_s3::Client> ) -> impl Responder {
 }
 
 use crate::web::dto::image_r2::ImageUploadRequest;
+use crate::services::image_r2::ImageR2Service;
 
 #[post("/image/upload")]
-pub async fn create_upload( data: web::Json<ImageUploadRequest> ) -> impl Responder {
-  println!("filename: {}", data.filename);
-  println!("content_type: {}", data.content_type);
-  HttpResponse::Ok().json("Metadata recibida")
+pub async fn create_upload(
+    data: web::Json<ImageUploadRequest>,
+    r2: web::Data<aws_sdk_s3::Client>,
+) -> impl Responder {
+
+    match ImageR2Service::create_upload(
+        &r2,
+        &data.filename,
+        &data.content_type,
+    )
+    .await
+    {
+        Ok((key, upload_url)) => {
+            HttpResponse::Ok().json(serde_json::json!({
+                "key": key,
+                "upload_url": upload_url,
+            }))
+        }
+
+        Err(error) => {
+            eprintln!("Error creando upload: {error}");
+
+            HttpResponse::InternalServerError()
+                .json("No se pudo generar la URL de subida")
+        }
+    }
 }
