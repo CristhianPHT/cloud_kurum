@@ -3,11 +3,14 @@ use uuid::Uuid;
 
 use crate::infrastructure::r2::create_presigned_put_url;
 
+
 pub struct ImageR2Service;
 
 impl ImageR2Service {
-  pub async fn create_upload( r2: &Client, filename: &str, content_type: &str,
-    ) -> Result<(String, String), Box<dyn std::error::Error>> {
+  pub async fn create_upload( r2: &Client, filename: &str, content_type: &str) -> Result<
+  (String, String), Box<dyn std::error::Error + Send + Sync>> {
+  // pub async fn create_upload( r2: &Client, filename: &str, content_type: &str,
+  //   ) -> Result<(String, String), Box<dyn std::error::Error>> {
 
     let extension = filename
       .rsplit('.')
